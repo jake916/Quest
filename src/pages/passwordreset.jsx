@@ -16,7 +16,8 @@ const PasswordReset = () => {
             {/* Left Section - Image */}
             <div
                 className="w-150 h-110  relative flex items-center justify-center bg-cover bg-center rounded-xl mt-10 mb-10 ml-5"
-                style={{ backgroundImage: "url('/src/assets/8.png')" }}
+        style={{ backgroundImage: "url('src/assets/8.png')" }}
+
             >
                 <div className="absolute inset-0 bg-primary/80 rounded-r-lg"></div>
                 <div className="relative text-white text-center px-8">

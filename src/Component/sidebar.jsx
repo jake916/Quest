@@ -1,4 +1,4 @@
-import React from 'react'
+import React from "react";
 import { FiHome, FiCheckSquare, FiFolder, FiMessageCircle, FiSettings, FiPlus } from "react-icons/fi";
 import { FaArrowCircleRight } from "react-icons/fa";
 import { Link } from "react-router-dom";
@@ -10,7 +10,7 @@ const Sidebar = () => {
             <div>
                 <div className="flex items-center space-x-3">
                     <img
-                        src="/src/assets/Avatar.png"
+                        src="src/assets/Avatar.png"
                         alt="Profile"
                         className="w-10 h-10 rounded-full border-2 border-white"
                     />

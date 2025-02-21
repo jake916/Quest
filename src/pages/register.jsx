@@ -6,11 +6,10 @@ const register = () => {
       {/* Left Side - Image Section */}
       <div
         className="w-150 h-110  relative flex items-center justify-center bg-cover bg-center rounded-xl mt-10 mb-10 ml-5 "
-        style={{ backgroundImage: "url('/src/assets/Group 6.png')" }}
+        style={{ backgroundImage: "url('src/assets/Group 6.png')" }}
       >
         <div className="absolute inset-0 bg-primary/80 rounded-r-lg"></div>
         <div className="relative text-white text-center px-8">
-
           <h2 className="text-4xl font-bold relative aboslute top-40">
             Boost Productivity,
             <br />
@@ -24,7 +23,7 @@ const register = () => {
         <h2 className="text-3xl font-bold  text-black ">Create your Account</h2>
         <form className="space-y-4 ">
           <div className=''>
-          <div>
+            <div>
               <label className="block text-gray-700">Username</label>
               <input
                 type="text"
