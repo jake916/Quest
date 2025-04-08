@@ -1,0 +1,15 @@
+Here is the comprehensive plan for addressing the login bug:
+
+### Plan:
+1. **Backend/Routes/auth.js**:
+   - Ensure that the login route correctly returns an error message when a user attempts to log in with an email that does not exist in the database. This is already implemented, but we will verify that it is functioning as expected.
+
+2. **src/api/auth.js**:
+   - Modify the `loginUser` function to throw an error if the response indicates that the user was not found. This will prevent the function from returning a token when the login fails.
+
+3. **src/pages/login.jsx**:
+   - Update the `handleLogin` function to ensure that it does not proceed to the dashboard if the login fails due to a non-existent user. Instead, it should display the appropriate error message.
+
+### Follow-up Steps:
+- Test the login functionality to ensure that the changes work as expected.
+- Verify that the user receives the correct error message when attempting to log in with a non-existent account.

@@ -1,66 +1,104 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { loginUser } from '../api/auth'; // Add this import statement
 
-const Signin = () => {
+import { Link, useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { FaEye, FaEyeSlash } from "react-icons/fa"; // Import eye icons
+
+const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    // Validation for email and password
+    if (!email || !password) {
+      setError("Email and password are required.");
+      return;
+    }
+  
+    try {
+      const token = await loginUser({ email, password }); // loginUser returns the token directly
+  
+      if (!token) {
+          throw new Error("Login failed. No token received.");
+      }
+  
+      // console.log("Login Successful:", token);
+      localStorage.setItem("token", token);
+      toast.success("Login Successful");
+  
+      setTimeout(() => navigate("/dashboard"), 2000);
+
+    } catch (err) {
+      console.error("Login Error:", err.message);
+      toast.error(err.message || "An error occurred during login. Please try again."); 
+      setError(err.message || "Server error, please try again.");
+    }
+  };
+
   return (
-    <div className="flex h-screen bg-white overflow-hidden">
-      {/* Left Side - Image Section */}
-      <div
-        className="w-150 h-110  relative flex items-center justify-center bg-cover bg-center rounded-xl mt-10 mb-10 ml-5 "
-        style={{ backgroundImage: "url('src/assets/Group 4.png')" }}
-      >
-        <div className="absolute inset-0 bg-primary/80 rounded-r-lg"></div>
-        <div className="relative text-white text-center px-8">
+<div className="flex h-screen bg-white items-center justify-center">
+
+      <ToastContainer />
 
 
-          <h2 className="text-4xl font-bold relative aboslute top-40">
-            Capture Task
-            <br />
-            Achieve More
-          </h2>
-        </div>
-      </div>
+      <div className="w-186 flex flex-col justify-center ml-100 px-16 mb-25  ">
 
-      {/* Right Side - Form Section */}
-      <div className="w-186 flex flex-col justify-center px-16 ">
-        <h2 className="text-3xl font-bold mt-6 mb-6 text-black ">Sign into your Account</h2>
-        <form className="space-y-4">
+        <h2 className="text-3xl font-bold mb-6 text-black">Login</h2>
+        {error && <p className="text-red-500 mb-4">{error}</p>}
+
+        <form className="space-y-4 justify-center" onSubmit={handleLogin}>
           <div>
             <label className="block text-gray-700">Email</label>
             <input
               type="email"
-              placeholder="hello@quest.com"
+              placeholder="Enter your Email"
               className="w-120 px-4 py-2 border rounded-lg bg-white text-black"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
-          <div>
+          
+          <div className="relative">
             <label className="block text-gray-700">Password</label>
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="********"
-              className="w-120 px-4 py-2 border rounded-lg bg-white text-black"
+              className="w-120 px-4 py-2 border rounded-lg bg-white text-black pr-10"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
-          </div>
-          <div className="text-right pr-35">
-            <a href="http://localhost:5173/password" className="text-sm">
-              Forgot Password?
-            </a>
-          </div>
-          <Link to="/dashboard">
-            <button className="w-120 bg-red-500 text-white py-2 rounded-lg">
-              Login
+            <button
+              type="button"
+              className="absolute inset-y-0 right-38 top-5 flex items-center text-gray-500"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{ background: "none", border: "none", padding: "0" }} 
+            >
+              {showPassword ? <FaEyeSlash /> : <FaEye />}
             </button>
-          </Link>
+          </div>
+
+          <button type="submit" className="w-120 bg-red-500 text-white py-2 rounded-lg">
+            Login
+          </button>
         </form>
-        <p className="text-center text-gray-500 mt-4 pr-30">
-          Don’t have an Account?{" "}
-          <a href="http://localhost:5173/register" className="text-red font-bold">
-            Register here
-          </a>
+
+        <p className="text-center text-gray-500 mt-4 mr-25">
+          Forgot Password? <Link to="/password" className="text-red font-bold">Reset here</Link>
+        </p>
+        <p className="text-center text-gray-500 mt-4 mr-25">
+          Don't have an account? <Link to="/register" className="text-red font-bold">Register Here</Link>
         </p>
       </div>
     </div>
   );
 };
 
-export default Signin;
+export default Login;
