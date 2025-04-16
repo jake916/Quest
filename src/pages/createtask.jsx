@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Sidebar from "../Component/sidebar";
 import PageHeader from "../Component/pageheader";
 import { jwtDecode } from "jwt-decode";
 import { getProjects } from "../api/projectService";
-
+import { createTask } from "../api/taskService";
 const CreateTask = () => {
+  const navigate = useNavigate();
     const [username, setUsername] = useState("Guest");
     const [projectList, setProjectList] = useState([]);
     const token = localStorage.getItem("token");
@@ -17,7 +21,6 @@ const CreateTask = () => {
         startDate: "",
         endDate: "",
     });
-    const [error, setError] = useState(""); // State for error messages
     const [loading, setLoading] = useState(false); // State for loading
 
     const handleChange = (e) => {
@@ -31,25 +34,11 @@ const CreateTask = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError(""); // Reset error state
-        if (!taskData.name || !taskData.description || !taskData.project || !taskData.status || !taskData.priority || !taskData.startDate || !taskData.endDate) {
-            setError("Please fill out all required fields.");
-            return;
-        }
-        setLoading(true); // Set loading state to true
-        const token = localStorage.getItem("token");
+        setLoading(true);
+        
         try {
-            const response = await fetch("http://localhost:5000/api/tasks", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify(taskData),
-            });
-            if (response.ok) {
-                const data = await response.json();
-                // Reset the form fields after successful task creation
+            const { success, message } = await createTask(token, taskData);
+            if (success) {
                 setTaskData({
                     name: "",
                     description: "",
@@ -59,17 +48,15 @@ const CreateTask = () => {
                     startDate: "",
                     endDate: "",
                 });
-                alert("Task created successfully!"); // Success message
+                toast.success(message || "Task created successfully!");
+                navigate("/mytasks");
             } else {
-                const errorData = await response.json();
-                console.error("Error creating task:", errorData.message);
-                alert("Failed to create task: " + errorData.message); // Display error message to user
+                toast.error(message || "Failed to create task");
             }
         } catch (error) {
-            console.error("Error:", error);
-            alert("Network error: " + error.message); // Display network error message
+            toast.error(error.message || "An error occurred");
         } finally {
-            setLoading(false); // Reset loading state
+            setLoading(false);
         }
     };
 
@@ -99,7 +86,9 @@ const CreateTask = () => {
     }, []);
 
     return (
-        <div className="h-screen bg-[#EEEFEF] flex">
+        <>
+            <ToastContainer />
+            <div className="h-screen bg-[#EEEFEF] flex">
             <div className="fixed h-screen">
                 <Sidebar username={username} userProjects={projectList} />
             </div>
@@ -108,7 +97,6 @@ const CreateTask = () => {
                 <form className=" bg--200 w-276 ml-[30px] p-6 rounded-lg shadow-md" onSubmit={handleSubmit}>
                     <h2 className="text-xl font-semibold text-red-900">Task Details</h2>
                     <p className="text-gray-600 mb-4">Provide details for your task</p>
-                    {error && <p className="text-red-600">{error}</p>} {/* Display error message */}
                     <div className="grid grid-cols-1 gap-6">
                         <div>
                             <label className="block font-semibold">Name of Task</label>
@@ -137,9 +125,6 @@ const CreateTask = () => {
                                 <option value="">Select Status</option>
                                 <option value="To Do">TO-DO</option>
                                 <option value="Ongoing">Ongoing</option>
-                                <option value="Completed">Completed</option>
-                                <option value="Cancelled">Cancelled</option>
-                                <option value="Overdue">Overdue</option>
                             </select>
                         </div>
                         <div>
@@ -155,11 +140,27 @@ const CreateTask = () => {
                     <div className="grid grid-cols-2 gap-6 mt-4">
                         <div>
                             <label className="block font-semibold">Start Date</label>
-                            <input type="date" name="startDate" value={taskData.startDate} onChange={handleChange} className="w-full p-2 border rounded mt-1" />
+                            <input 
+                              type="date" 
+                              name="startDate" 
+                              onClick={(e) => e.target.showPicker()}
+                              min={new Date().toISOString().split('T')[0]}
+                              value={taskData.startDate} 
+                              onChange={handleChange} 
+                              className="w-full p-2 border rounded mt-1 cursor-pointer" 
+                            />
                         </div>
                         <div>
                             <label className="block font-semibold">End Date</label>
-                            <input type="date" name="endDate" value={taskData.endDate} onChange={handleChange} className="w-full p-2 border rounded mt-1" />
+                            <input 
+                              type="date" 
+                              name="endDate" 
+                              onClick={(e) => e.target.showPicker()}
+                              min={taskData.startDate || new Date().toISOString().split('T')[0]}
+                              value={taskData.endDate} 
+                              onChange={handleChange} 
+                              className="w-full p-2 border rounded mt-1 cursor-pointer" 
+                            />
                         </div>
                     </div>
                     <div className="mt-6">
@@ -168,6 +169,7 @@ const CreateTask = () => {
                 </form>
             </div>
         </div>
+        </>
     );
 };
 

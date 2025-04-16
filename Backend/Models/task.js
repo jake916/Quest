@@ -2,9 +2,12 @@ const mongoose = require("mongoose");
 
 const TaskSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true },
-    description: { type: String, required: true },
-    project: { type: mongoose.Schema.Types.ObjectId, ref: "Project", required: true }, // Link to project
+    name: { type: String },
+    description: { type: String },
+    project: { 
+      id: { type: mongoose.Schema.Types.ObjectId, ref: "Project" },
+      name: { type: String }
+    },
     status: { 
       type: String, 
       enum: ["To Do", "Ongoing", "Completed", "Cancelled", "Overdue"], 
@@ -13,7 +16,17 @@ const TaskSchema = new mongoose.Schema(
     priority: { type: String, enum: ["Low", "Medium", "High"], default: "Medium" },
     startDate: { type: Date },
     endDate: { type: Date },
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true }, // Auto-set from logged-in user
+    user: { 
+      id: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+      name: { type: String, required: true }
+    },
+    subtasks: [
+      {
+        title: String,
+        completed: { type: Boolean, default: false }
+      }
+    ]
+
   },
   { timestamps: true } // Adds createdAt and updatedAt fields automatically
 );

@@ -38,7 +38,7 @@ const Sidebar = ({ username, userProjects }) => {
             <div>
                 <div className="flex items-center space-x-3">
                     <img
-                        src="src/assets/Avatar.png"
+                        src="/src/assets/Avatar.png"
                         alt="Profile"
                         className="w-10 h-10 rounded-full border-2 border-white"
                     />
@@ -64,7 +64,7 @@ const Sidebar = ({ username, userProjects }) => {
                         </Link>
 
                         <Link to="/mytasks">
-                            <li className={`flex items-center space-x-2 ${['/mytasks', '/createtask'].includes(location.pathname) ? 'bg-white text-black' : 'text-white'} px-3 py-2 rounded-lg cursor-pointer`}>
+                            <li className={`flex items-center space-x-2 ${['/mytasks', '/createtask', '/edittask'].includes(location.pathname) ? 'bg-white text-black' : 'text-white'} px-3 py-2 rounded-lg cursor-pointer`}>
                                 <FiCheckSquare className="text-lg" />
                                 <span className="text-sm ">My Tasks</span>
                             </li>

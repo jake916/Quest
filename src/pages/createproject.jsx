@@ -33,28 +33,49 @@ const CreateProject = () => {
     }
   };
 
+  const DEFAULT_LOGO = null; // No default logo
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!projectName || !projectDescription || !projectImage) {
-      toast.error("Please fill all fields"); // Use toast for error
+    if (!projectName || !projectDescription) {
+      toast.error("Please provide name and description"); // Updated validation
       return;
     }
 
     const formData = new FormData();
     formData.append("name", projectName);
     formData.append("description", projectDescription);
-    formData.append("projectImage", projectImage); 
+    if (projectImage) {
+      formData.append("projectImage", projectImage); // Only append if file was selected
+    }
+
+    if (!token) {
+      toast.error("Please login to create projects");
+      return;
+    }
 
     try {
       setLoading(true);
-    const response = await createProject(formData, token);
-
-      toast.success("Project successfully created!"); // Use toast notification for success
-      navigate("/projects"); // Redirect to the projects page after creation
+      const response = await createProject(formData, token);
+      
+      if (response && response.success) {
+        toast.success(response.message || "Project created successfully!", {
+          autoClose: 3000,
+          onClose: () => navigate("/projects")
+        });
+      } else {
+        toast.error(response?.message || "Failed to create project");
+      }
     } catch (error) {
       console.error("Error creating project:", error);
-      toast.error("Error creating project: " + error.message); // Use toast notification for error
+      if (error.response?.status === 401) {
+        toast.error("Session expired. Please login again.");
+        localStorage.removeItem("token");
+        navigate("/login");
+      } else {
+        toast.error(error.message || "Error creating project");
+      }
     } finally {
       setLoading(false);
     }
@@ -106,17 +127,11 @@ const fetchProjects = async () => {
                 <div className="bg-grey p-4 rounded-lg border border-gray-300">
                   <label className="block text-gray-700 font-semibold">Upload Project Logo</label>
                   <div className="relative w-24 h-24 mt-2">
-                    {imagePreview ? (
-                      <img
-                        src={imagePreview}
-                        alt="Project Logo"
-                        className="w-full h-full rounded-full object-cover border"
-                      />
-                    ) : (
-                      <div className="w-full h-full rounded-full bg-gray-300 flex items-center justify-center text-gray-600">
-                        +
-                      </div>
-                    )}
+                    <img
+                      src={imagePreview || projectImage || DEFAULT_LOGO}
+                      alt="src\assets\iconwine.png"
+                      className="w-full h-full rounded-full object-cover border"
+                    />
                     <input
                       type="file"
                       accept="image/*"

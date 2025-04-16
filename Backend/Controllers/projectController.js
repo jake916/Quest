@@ -1,6 +1,7 @@
+const path = require('path');
+const fs = require('fs');
 const Project = require("../Models/project");
 const User = require("../Models/User"); // Import the User model
-const cloudinary = require("../Config/cloudinary");
 
 const createProject = async (req, res) => {
     
@@ -13,22 +14,26 @@ const createProject = async (req, res) => {
     try {
         const { name, description } = req.body;
 
-        if (!req.file) {
-            return res.status(400).json({ message: "Project image is required" });
-        }
-
         if (!req.user || !req.user.id) {
             return res.status(401).json({ message: "Unauthorized: User not found" });
         }
 
-        const result = await cloudinary.uploader.upload(req.file.path); // Upload to Cloudinary
-        console.log("Uploaded image URL:", result.secure_url); // Log the uploaded image URL
+        let projectImageUrl = null; // No default image
+        
+        if (req.file) {
+            // Handle file upload properly
+            if (!fs.existsSync(path.join(__dirname, '../../public/uploads'))) {
+                fs.mkdirSync(path.join(__dirname, '../../public/uploads'), { recursive: true });
+            }
+            const uploadPath = path.join(__dirname, '../../public/uploads', req.file.filename);
+            await fs.promises.rename(req.file.path, uploadPath);
+            projectImageUrl = `/uploads/${req.file.filename}`;
+        }
 
-        // Log the project data before saving
         const newProject = new Project({
             name,
             description,
-            projectImage: result.secure_url, // Cloudinary URL
+            projectImage: projectImageUrl,
             user: req.user.id,
         });
         console.log("Project data to be saved:", newProject); // Log the project data

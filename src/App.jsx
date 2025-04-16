@@ -15,6 +15,7 @@ import Settings from './pages/settings'
 import Createtask from './pages/createtask'
 import Createproject from './pages/createproject'
 import PrivateRoute from "./Component/privateroute";
+import Edittask from './pages/edittask';
 
 const AppWrapper = () => {
   const location = useLocation()
@@ -27,6 +28,7 @@ const AppWrapper = () => {
        location.pathname !== '/messages' && 
        location.pathname !== '/settings' && 
        location.pathname !== '/createtask' && 
+       !location.pathname.startsWith('/edittask') && 
        location.pathname !== '/createproject' && <Header />}
       
       <Routes>
@@ -45,6 +47,7 @@ const AppWrapper = () => {
         <Route path="/messages" element={<PrivateRoute><Messages /></PrivateRoute>} />
         <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
         <Route path="/createtask" element={<PrivateRoute><Createtask /></PrivateRoute>} />
+        <Route path="/edittask/:taskId" element={<PrivateRoute><Edittask /></PrivateRoute>} />
         <Route path="/createproject" element={<PrivateRoute><Createproject /></PrivateRoute>} />
       </Routes>
     </>

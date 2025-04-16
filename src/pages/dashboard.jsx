@@ -17,6 +17,7 @@ const Dashboard = () => {
     const [ongoingTasks, setOngoingTasks] = useState(0);
     const [completedTasks, setCompletedTasks] = useState(0);
     const [overdueTasks, setOverdueTasks] = useState(0);
+    const [todoTasks, setTodoTasks] = useState(0);
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -31,13 +32,78 @@ const Dashboard = () => {
         }
     }, []);
 
+    const fetchTasks = async () => {
+        const token = localStorage.getItem("token");
+        try {
+            const response = await getTasks(token);
+            console.log("Raw task response:", JSON.stringify(response, null, 2));
+            
+            let tasks = [];
+            
+            // Handle different possible API response structures
+            if (Array.isArray(response)) {
+                tasks = response;
+            } else if (response.data && Array.isArray(response.data)) {
+                tasks = response.data;
+            } else if (response.tasks && Array.isArray(response.tasks)) {
+                tasks = response.tasks;
+            }
+            
+            // Sort tasks by creation date (newest first) and take only 5
+            const sortedTasks = tasks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            setLatestTasks(sortedTasks.slice(0, 5));
+            
+            // Count tasks per project
+            const taskCounts = {};
+            tasks.forEach(task => {
+                const projectId = task.project?.id || task.project || task.project_id;
+                if (projectId) {
+                    taskCounts[projectId] = (taskCounts[projectId] || 0) + 1;
+                }
+            });
+            setProjectTaskCounts(taskCounts);
+            
+            // Handle task counters from API response
+            setTotalTasks(response.totalTasks || tasks.length);
+            setOngoingTasks(response.ongoingTasks || 
+                tasks.filter(task => task.status?.toLowerCase() === 'ongoing').length);
+            setCompletedTasks(response.completedTasks || 
+                tasks.filter(task => task.status?.toLowerCase() === 'completed').length);
+            setOverdueTasks(response.overdueTasks || 
+                tasks.filter(task => {
+                    if (!task.endDate) return false;
+                    
+                    const endDate = new Date(task.endDate);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0); // Compare dates without time
+                    
+                    const isOverdue = endDate < today;
+                    const isNotCompleted = task.status?.toLowerCase() !== 'completed';
+                    const isNotCancelled = task.status?.toLowerCase() !== 'cancelled';
+                    
+                    return isOverdue && isNotCompleted && isNotCancelled;
+                }).length);
+            
+            setTodoTasks(response.todoTasks || 
+                tasks.filter(task => task.status?.toLowerCase() === 'to do').length);
+        } catch (error) {
+            console.error("Error fetching tasks:", error.message);
+        }
+    };
+
     useEffect(() => {
         const token = localStorage.getItem("token");
         
         const fetchProjects = async () => {
             try {
                 const data = await getProjects(token);
+                console.log("Projects API response:", JSON.stringify(data, null, 2));
                 const sortedProjects = data.projects.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                console.log("Project images:", sortedProjects.map(p => ({
+                    name: p.name,
+                    image: p.projectImage,
+                    type: typeof p.projectImage
+                })));
                 
                 // Store 4 most recent projects for sidebar
                 setProjectList(sortedProjects.slice(0, 4));
@@ -53,75 +119,33 @@ const Dashboard = () => {
             }
         };
 
-        const fetchTasks = async () => {
-            try {
-                const response = await getTasks(token);
-                console.log("Raw task response:", response);
-                
-                let tasks = [];
-                
-                // Handle different possible API response structures
-                if (Array.isArray(response)) {
-                    tasks = response;
-                } else if (response.tasks && Array.isArray(response.tasks)) {
-                    tasks = response.tasks;
-                }
-                
-                // Sort tasks by creation date (newest first) and take only 5
-                const sortedTasks = tasks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-                setLatestTasks(sortedTasks.slice(0, 5));
-                
-                // Count tasks per project
-                const taskCounts = {};
-                tasks.forEach(task => {
-                    const projectId = getProjectId(task);
-                    if (projectId) {
-                        taskCounts[projectId] = (taskCounts[projectId] || 0) + 1;
-                    }
-                });
-                setProjectTaskCounts(taskCounts);
-                
-                // If the API returns counter values directly, use them
-                if (response.totalTasks !== undefined && 
-                    response.ongoingTasks !== undefined && 
-                    response.completedTasks !== undefined && 
-                    response.overdueTasks !== undefined) {
-                    
-                    setTotalTasks(response.totalTasks);
-                    setOngoingTasks(response.ongoingTasks);
-                    setCompletedTasks(response.completedTasks);
-                    setOverdueTasks(response.overdueTasks);
-                } 
-                // Otherwise calculate the counters from the tasks array
-                else {
-                    const total = tasks.length;
-                    const ongoing = tasks.filter(task => task.status === 'ongoing').length;
-                    const completed = tasks.filter(task => task.status === 'completed').length;
-                    const overdue = tasks.filter(task => 
-                        new Date(task.dueDate) < new Date() && task.status !== 'completed'
-                    ).length;
-                    
-                    setTotalTasks(total);
-                    setOngoingTasks(ongoing);
-                    setCompletedTasks(completed);
-                    setOverdueTasks(overdue);
-                }
-            } catch (error) {
-                console.error("Error fetching tasks:", error.message);
-            }
-        };
-
         // First fetch projects, then fetch tasks
         fetchProjects().then(() => fetchTasks());
+
+        // Add event listener for task updates
+        const handleTaskUpdated = () => {
+            console.log('Task updated event received - refreshing dashboard tasks');
+            fetchTasks();
+        };
+
+        window.addEventListener('taskUpdated', handleTaskUpdated);
+        
+        // Clean up event listener
+        return () => {
+            window.removeEventListener('taskUpdated', handleTaskUpdated);
+        };
     }, []);
 
     // Function to determine the project field name in task object
     const getProjectId = (task) => {
-        // Check various possible field names for project ID
+        // Check nested project.id first (matches API response structure)
+        if (task.project?.id) return task.project.id;
+        // Then check other common patterns
         if (task.projectId) return task.projectId;
         if (task.project && typeof task.project === 'string') return task.project;
-        if (task.project && task.project._id) return task.project._id;
+        if (task.project?._id) return task.project._id;
         if (task.project_id) return task.project_id;
+        console.warn("No project ID found in task:", task);
         return null;
     };
 
@@ -133,7 +157,17 @@ const Dashboard = () => {
         const project = projectsMap[projectId];
         if (!project) return null;
         
-        return project.projectImage;
+        // Handle different project image formats
+        if (project.projectImage) {
+            if (typeof project.projectImage === 'string') {
+                // If it's already a URL/path, return it
+                return project.projectImage;
+            } else if (project.projectImage.url) {
+                // If it's an object with url property
+                return project.projectImage.url;
+            }
+        }
+        return null;
     };
 
     return (
@@ -186,12 +220,13 @@ const Dashboard = () => {
                     </div>
 
                     {/* Task Summary Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6 w-264">
+                    <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mt-6 w-264">
                         {[
                             { title: "Total Tasks", count: totalTasks },
-                            { title: "Ongoing Tasks", count: ongoingTasks },
-                            { title: "Completed Tasks", count: completedTasks },
-                            { title: "Overdue Tasks", count: overdueTasks },
+                            { title: "To Do", count: todoTasks },
+                            { title: "Ongoing", count: ongoingTasks },
+                            { title: "Completed", count: completedTasks },
+                            { title: "Overdue", count: overdueTasks },
                         ].map((item, index) => (
                             <div key={index} className="bg-[#D8BEC6] p-4 rounded-2xl text-left">
                                 <p className="text-sm text-black">{item.title}</p>
@@ -213,21 +248,27 @@ const Dashboard = () => {
                         <div className="mt-4 space-y-3">
                             {(latestTasks || []).length > 0 ? latestTasks.map((task, index) => {
                                 const projectId = getProjectId(task);
+                                console.log("Task project ID:", projectId, "for task:", task.name);
                                 const projectImg = getProjectImage(task);
+                                console.log("Project image URL:", projectImg);
                                 const project = projectId ? projectsMap[projectId] : null;
+                                console.log("Found project:", project?.name);
                                 
                                 return (
                                     <div key={index} className="bg-[#E0ADBD] p-3 rounded-lg flex items-center justify-between">
                                         <div className="flex items-center gap-3">
                                             {projectImg ? (
                                                 <img 
-                                                    src={projectImg} 
+                                                    src={projectImg.includes('cloudinary') ? 
+                                                        projectImg.replace('/upload/', '/upload/w_100,h_100,c_fill/') : 
+                                                        projectImg} 
                                                     alt={project?.name || "Project"} 
                                                     className="w-10 h-10 rounded-full object-cover"
                                                     onError={(e) => {
                                                         e.target.onerror = null;
-                                                        e.target.src = "src/assets/placeholder.png"; // Fallback image
+                                                        e.target.src = "/assets/placeholder.png";
                                                     }}
+                                                    loading="lazy"
                                                 />
                                             ) : (
                                                 <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center">
