@@ -10,6 +10,7 @@ export default defineConfig({
     react()
   ],
   server: {
+    host: '0.0.0.0', // Bind to all network interfaces
     port: process.env.PORT || 5173, // Use the PORT environment variable or default to 5173
   },
 })
