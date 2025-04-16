@@ -5,6 +5,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 import { API_URL } from '../api/auth'; // Import API_URL from auth.js
+import group6Image from '../assets/Group 6.png'; // Import image with space in filename
 
 const Register = () => {
   const navigate = useNavigate(); // Initialize navigation
@@ -56,7 +57,7 @@ const Register = () => {
       <ToastContainer /> {/* Toast Notifications */}
 
       <div className="w-150 h-110 relative flex items-center justify-center bg-cover bg-center rounded-xl mt-10 mb-10 ml-5"
-        style={{ backgroundImage: "url('src/assets/Group 6.png')" }}
+        style={{ backgroundImage: `url(${group6Image})` }}
       >
         <div className="absolute inset-0 bg-primary/80 rounded-r-lg"></div>
         <div className="relative text-white text-center px-8">
@@ -140,10 +141,10 @@ const Register = () => {
           <button className="w-120 bg-blue-500 text-white px-4 py-2 rounded-lg">Create Account</button>
         </form>
 
-        <p className="text-center text-gray-500 mt-4 mr-25">
-          Already have an Account?{" "}
-          <a href="http://localhost:5173/" className="text-red font-bold">Sign In</a>
-        </p>
+          <p className="text-center text-gray-500 mt-4 mr-25">
+            Already have an Account?{" "}
+            <a href="/" className="text-red font-bold">Sign In</a>
+          </p>
       </div>
     </div>
   );
