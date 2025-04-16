@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:5000/api/auth'; // Adjust if needed
+const API_URL = 'https://quest-qjg0.onrender.com/api/auth'; // Adjust if needed
 
 export const loginUser = async (userData) => {
     try {
