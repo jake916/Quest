@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import { Eye, EyeOff } from "lucide-react";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import axios from 'axios';
+import { API_URL } from '../api/auth'; // Import API_URL from auth.js
 
 const Register = () => {
   const navigate = useNavigate(); // Initialize navigation
@@ -30,21 +32,13 @@ const Register = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/register", {
-        method: "POST",
+      const response = await axios.post(`${API_URL}/register`, formData, {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Something went wrong. Please try again.");
-      }
-
-      toast.success(data.message);
+      toast.success(response.data.message);
       setFormData({ username: "", email: "", password: "", confirmPassword: "" }); // Clear form
 
       // Redirect to login page after a short delay
@@ -53,7 +47,7 @@ const Register = () => {
       }, 2000);
 
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.response?.data?.message || error.message || "Something went wrong. Please try again.");
     }
   };
 
