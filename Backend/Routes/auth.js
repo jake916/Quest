@@ -33,6 +33,7 @@ const authMiddleware = (req, res, next) => {
 
 // Register User
 router.post("/register", async (req, res) => {
+    console.log("Registration request received:", req.body); // Log the incoming request   
     try {
         const { username, email, password, confirmPassword } = req.body;
 
