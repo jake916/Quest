@@ -13,10 +13,11 @@ require('dotenv').config();
 
 const app = express();
 app.use(cors({
-    origin: 'https://quest-3ica.onrender.com', // Allow requests from this origin
-    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allow specific methods
-    credentials: true // Allow credentials
-}));
+    origin: ['http://localhost:5173', 'https://quest-3ica.onrender.com'], // or '*' if you want to allow all, but not recommended with credentials
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  }));
 
 
 
@@ -24,6 +25,8 @@ app.use(cors({
 app.use(express.json());
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
+
+app.options('*', cors()); // enable pre-flight for all routes
 
 // Routes
 app.use("/api/auth", authRoutes);
@@ -41,5 +44,5 @@ mongoose.connect(process.env.MONGO_URI, {
     .then(() => console.log("MongoDB Connected"))
     .catch((err) => console.error("MongoDB Connection Error:", err));
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5012;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

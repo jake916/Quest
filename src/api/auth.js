@@ -1,14 +1,15 @@
 import axios from 'axios';
 
-export const API_URL = 'https://quest-qjg0.onrender.com/api/auth'; // Adjust if needed
+export const API_URL = 'https://quest-3ica.onrender.com/api/auth'; // Adjust if needed
 
 export const loginUser = async (userData) => {
     try {
         const response = await axios.post(`${API_URL}/login`, userData, {
             headers: {
-                'Content-Type': 'application/json'
-            }
-        });
+              'Content-Type': 'application/json'
+            },
+            withCredentials: true
+          });
 
         
 
