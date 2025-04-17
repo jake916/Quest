@@ -26,7 +26,7 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    console.log("Form submitted"); // Add this
     if (formData.password !== formData.confirmPassword) {
       toast.error("Passwords do not match");
       return;
