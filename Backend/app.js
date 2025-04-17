@@ -26,7 +26,12 @@ app.use(express.json());
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 
-app.options('*', cors()); // enable pre-flight for all routes
+app.options('*', cors({
+    origin: ['http://localhost:5173', 'https://quest-3ica.onrender.com'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  }));
 
 // Routes
 app.use("/api/auth", authRoutes);
