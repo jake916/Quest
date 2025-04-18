@@ -14,7 +14,6 @@ router.use(cookieParser());
 const authMiddleware = (req, res, next) => {
     const token = req.cookies.token || req.header("Authorization")?.split(" ")[1];
 
-
     if (!token) {
         return res.status(401).json({ message: "Access denied. No token provided." });
     }
@@ -22,8 +21,6 @@ const authMiddleware = (req, res, next) => {
     try {
         const tokenValue = token.startsWith("Bearer ") ? token.split(" ")[1] : token;
         const decoded = jwt.verify(tokenValue, process.env.JWT_SECRET);
-        console.log("Decoded token:", decoded); // Log the decoded token for debugging
-
         req.user = decoded;
         next();
     } catch (error) {
@@ -33,8 +30,8 @@ const authMiddleware = (req, res, next) => {
 
 // Register User
 router.post("/register", async (req, res) => {
-console.log("Registration request received:", req.body); // Log the incoming request
-console.log("Request headers:", req.headers); // Log the request headers
+    console.log("Registration request received:", req.body);
+
     try {
         const { username, email, password, confirmPassword } = req.body;
 
@@ -54,7 +51,7 @@ console.log("Request headers:", req.headers); // Log the request headers
             return res.status(400).json({ message: "Password must be at least 8 characters long" });
         }
 
-        const existingUser = await User.findOne({ 
+        const existingUser = await User.findOne({
             $or: [{ username }, { email: email.toLowerCase() }]
         });
 
@@ -62,16 +59,16 @@ console.log("Request headers:", req.headers); // Log the request headers
             return res.status(400).json({ message: "Username or email already exists" });
         }
 
-        
-
-        const newUser = new User({ username, email: email.toLowerCase(), password});
-        
+        // Remove explicit password hashing to avoid double hashing
+        const newUser = new User({
+            username,
+            email: email.toLowerCase(),
+            password: password
+        });
 
         const savedUser = await newUser.save();
 
-
-
-        return res.status(201).json({ message: "User registered successfully" });
+        return res.status(201).json({ message: "User registered successfully", user: { id: savedUser._id, username: savedUser.username, email: savedUser.email } });
 
     } catch (error) {
         console.error("Registration Error:", error.message);
@@ -96,36 +93,31 @@ router.post("/login", async (req, res) => {
 
         const user = await User.findOne({ email: email ? email.toLowerCase() : "" });
 
-
         if (!user || !email) {
             return res.status(400).json({ message: "User not found or email is required" });
-
         }
 
-        
-        // Compare entered password with stored hashed password
         const isMatch = await bcrypt.compare(password, user.password);
-        
 
         if (!isMatch) {
             return res.status(400).json({ message: "Invalid credentials" });
         }
 
-        
-
-        // Generate JWT Token
         const token = jwt.sign(
             { id: user._id, email: user.email, username: user.username },
             process.env.JWT_SECRET,
             { expiresIn: process.env.JWT_EXPIRES_IN || "1h" }
         );
 
-        
-        res.cookie("token", token, { // Set the JWT token in a cookie
+        res.cookie("token", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "Strict"
-        }).status(200).json({ message: "Logged in successfully", user: { id: user._id, username: user.username, email: user.email }, token }); // Include token in the response
+        }).status(200).json({
+            message: "Logged in successfully",
+            user: { id: user._id, username: user.username, email: user.email },
+            token
+        });
 
     } catch (err) {
         console.error("Login Error:", err.message);
@@ -133,12 +125,12 @@ router.post("/login", async (req, res) => {
     }
 });
 
-// Logout User (Clear JWT cookie)
+// Logout User
 router.post("/logout", (req, res) => {
     res.clearCookie("token").status(200).json({ message: "Logged out successfully" });
 });
 
-// Protected Route Example (Dashboard)
+// Protected Route Example
 router.get("/dashboard", authMiddleware, async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select("-password");

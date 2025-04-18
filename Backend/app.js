@@ -15,7 +15,7 @@ const app = express();
 app.use(cors({
     origin: ['http://localhost:5173', 'https://quest-3ica.onrender.com'], // or '*' if you want to allow all, but not recommended with credentials
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
   }));
 
@@ -29,7 +29,7 @@ app.use(express.urlencoded({ extended: true }));
 app.options('*', cors({
     origin: ['http://localhost:5173', 'https://quest-3ica.onrender.com'],
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
   }));
 

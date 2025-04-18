@@ -39,12 +39,12 @@ const createProject = async (req, res) => {
         console.log("Project data to be saved:", newProject); // Log the project data
 
         await newProject.save();
-        res.status(201).json({ message: "Project created successfully", project: newProject });
+        res.status(201).json({  success: true, message: "Project created successfully", project: newProject });
         console.log("New project created:", newProject); // Log the created project for debugging
 
     } catch (error) {
         console.error("Error creating project:", error.message); // Log the error message for debugging
-        res.status(500).json({ message: "Server error", error: error.message });
+        res.status(500).json({ success: false, message: "Server error", error: error.message });
     }
 };
 
