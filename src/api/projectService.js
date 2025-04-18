@@ -1,6 +1,9 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/projects"; // Adjust if needed
+const localAPI = 'http://localhost:5012/api/projects';
+const prodAPI = 'https://quest-3ica.onrender.com/api/projects';
+
+export const API_URL = window.location.hostname === 'localhost' ? localAPI : prodAPI;
 
 // Get all projects
 export const getProjects = async (token) => {

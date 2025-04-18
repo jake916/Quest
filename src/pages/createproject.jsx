@@ -62,7 +62,10 @@ const CreateProject = () => {
       if (response && response.success) {
         toast.success(response.message || "Project created successfully!", {
           autoClose: 3000,
-          onClose: () => navigate("/projects")
+          onClose: () => {
+            console.log("Toast closed, navigating to /projects");
+            navigate("/projects");
+          }
         });
       } else {
         toast.error(response?.message || "Failed to create project");

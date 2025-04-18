@@ -1,6 +1,9 @@
 import axios from 'axios';
 
-export const API_URL = 'https://quest-3ica.onrender.com/api/auth'; // Adjust if needed
+const localAPI = 'http://localhost:5012/api/auth';
+const prodAPI = 'https://quest-3ica.onrender.com/api/auth';
+
+export const API_URL = window.location.hostname === 'localhost' ? localAPI : prodAPI;
 
 export const loginUser = async (userData) => {
     try {

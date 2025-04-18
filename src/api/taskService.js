@@ -1,7 +1,10 @@
 // taskService.js
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/tasks";
+const localAPI = 'http://localhost:5012/api/tasks';
+const prodAPI = 'https://quest-3ica.onrender.com/api/tasks';
+
+export const API_URL = window.location.hostname === 'localhost' ? localAPI : prodAPI;
 
 export const getTask = async (token, taskId) => {
   try {
