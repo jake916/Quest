@@ -33,6 +33,10 @@ app.options('*', cors({
     allowedHeaders: ['Content-Type', 'Authorization']
   }));
 
+app.get('/test-cors', (req, res) => {
+    res.json({ message: 'CORS is working!' });
+}); // Test CORS endpoint
+
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);

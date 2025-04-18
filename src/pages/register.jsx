@@ -26,30 +26,22 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted"); // Add this
-    if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords do not match");
-      return;
-    }
-
+    console.log("Submitting form...");
+  
     try {
-      const response = await axios.post(`${API_URL}/register`, formData, {
+      const response = await fetch("https://quest-3ica.onrender.com/api/auth/register", {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        withCredentials: true,
+        credentials: "include", // only if you're using cookies/auth
+        body: JSON.stringify(formData),
       });
-
-      toast.success(response.data.message);
-      setFormData({ username: "", email: "", password: "", confirmPassword: "" }); // Clear form
-
-      // Redirect to login page after a short delay
-      setTimeout(() => {
-        navigate('/');
-      }, 2000);
-
+  
+      const data = await response.json();
+      console.log("Response:", data);
     } catch (error) {
-      toast.error(error.response?.data?.message || error.message || "Something went wrong. Please try again.");
+      console.error("Error submitting form:", error);
     }
   };
 
