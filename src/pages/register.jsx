@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from "lucide-react";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import axios from 'axios';
-import { API_URL } from '../api/auth'; // Import API_URL from auth.js
-import group6Image from '../assets/Group 6.png'; // Import image with space in filename
+import { API_URL } from '../api/auth';
+import group6Image from '../assets/Group 6.png';
 
 const Register = () => {
-  const navigate = useNavigate(); // Initialize navigation
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     username: "",
@@ -19,6 +18,7 @@ const Register = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -26,30 +26,58 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submitting form...");
-  
+
+    // Basic validations
+    if (!formData.username || !formData.email || !formData.password || !formData.confirmPassword) {
+      return toast.error("All fields are required");
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      return toast.error("Passwords do not match");
+    }
+
+    if (formData.username.length < 6) {
+      return toast.error("Username must be at least 6 characters");
+    }
+
+    if (formData.password.length < 8) {
+      return toast.error("Password must be at least 8 characters");
+    }
+
+    setLoading(true);
+
     try {
-      const response = await fetch("https://quest-3ica.onrender.com/api/auth/register", {
+      const response = await fetch(`${API_URL}/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", // only if you're using cookies/auth
+        credentials: "include",
         body: JSON.stringify(formData),
       });
-  
+
       const data = await response.json();
-      console.log("Response:", data);
+
+      if (!response.ok) {
+        toast.error(data.message || "Registration failed");
+      } else {
+        toast.success(data.message || "Registration successful!");
+        setTimeout(() => navigate("/"), 2000);
+      }
     } catch (error) {
       console.error("Error submitting form:", error);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="flex h-screen bg-white">
-      <ToastContainer /> {/* Toast Notifications */}
+      <ToastContainer />
 
-      <div className="w-150 h-110 relative flex items-center justify-center bg-cover bg-center rounded-xl mt-10 mb-10 ml-5"
+      <div
+        className="w-150 h-110 relative flex items-center justify-center bg-cover bg-center rounded-xl mt-10 mb-10 ml-5"
         style={{ backgroundImage: `url(${group6Image})` }}
       >
         <div className="absolute inset-0 bg-primary/80 rounded-r-lg"></div>
@@ -73,6 +101,7 @@ const Register = () => {
               className="w-120 px-4 py-2 border rounded-lg bg-white text-black"
             />
           </div>
+
           <div>
             <label className="block text-gray-700">Email</label>
             <input
@@ -85,7 +114,6 @@ const Register = () => {
             />
           </div>
 
-          {/* Password Input */}
           <div className="relative">
             <label className="block text-gray-700">Password</label>
             <div className="relative w-120">
@@ -101,14 +129,13 @@ const Register = () => {
                 type="button"
                 className="absolute inset-y-0 right-3 flex items-center text-gray-500"
                 onClick={() => setShowPassword(!showPassword)}
-                style={{ background: "none", border: "none", padding: "0" }} 
+                style={{ background: "none", border: "none", padding: "0" }}
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
           </div>
 
-          {/* Confirm Password Input */}
           <div className="relative">
             <label className="block text-gray-700">Re-Enter Password</label>
             <div className="relative w-120">
@@ -124,20 +151,26 @@ const Register = () => {
                 type="button"
                 className="absolute inset-y-0 right-3 flex items-center text-gray-500"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                style={{ background: "none", border: "none", padding: "0" }} 
+                style={{ background: "none", border: "none", padding: "0" }}
               >
                 {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
           </div>
 
-          <button type="submit" className="w-120 bg-red-500 text-white px-4 py-2 rounded-lg">Create Account</button>
+          <button
+            type="submit"
+            className="w-120 bg-red-500 text-white px-4 py-2 rounded-lg"
+            disabled={loading}
+          >
+            {loading ? "Creating..." : "Create Account"}
+          </button>
         </form>
 
-          <p className="text-center text-gray-500 mt-4 mr-25">
-            Already have an Account?{" "}
-            <a href="/" className="text-red font-bold">Sign In</a>
-          </p>
+        <p className="text-center text-gray-500 mt-4 mr-25">
+          Already have an Account?{" "}
+          <a href="/" className="text-red font-bold">Sign In</a>
+        </p>
       </div>
     </div>
   );
