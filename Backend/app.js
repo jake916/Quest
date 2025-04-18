@@ -26,7 +26,7 @@ app.use(cors({
 app.use(express.json());
 app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, '../build')));
+app.use(express.static(path.join(__dirname, '../../build')));
 app.options('*', cors({
     origin: ['http://localhost:5173', 'https://quest-3ica.onrender.com'],
     credentials: true,
@@ -44,8 +44,9 @@ app.use("/api/users", userRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/tasks", taskRoutes); // Use task routes
 
+
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../build', 'index.html'));
+    res.sendFile(path.join(__dirname, '../../build', 'index.html'));
 });
 
 // Connect to MongoDB
