@@ -187,7 +187,7 @@ const Dashboard = () => {
                         <div className="bg-[#D8BEC6] p-6 rounded-2xl col-span-1 md:col-span-2 flex flex-col justify-between w-130 h-80">
                             <h2 className="text-lg font-semibold text-black">Welcome To Quest</h2>
                             <div className="text-[40px] font-bold text-black">Hello {username}</div>
-                            <img src="src/assets/ififif.png" alt="Welcome Illustration" className="w-60 h-60 mt-7 ml-50" />
+                            <img src="/uploads/ififif.png" alt="Welcome Illustration" className="w-60 h-60 mt-7 ml-50" />
                         </div>
 
                         {/* Projects Section */}
@@ -212,7 +212,7 @@ const Dashboard = () => {
                                 )) : (
                                     <div>
                                         <p className="text-black">No projects available.</p>
-                                        <img src="src\assets\Artboard 1 copy 4.png" alt="Welcome Illustration" className="w-50 h-50 mt-4 ml-50" />
+                                        <img src="/uploads/Artboard 1 copy 4.png" alt="Welcome Illustration" className="w-50 h-50 mt-4 ml-50" />
                                     </div>
                                 )}
                             </div>

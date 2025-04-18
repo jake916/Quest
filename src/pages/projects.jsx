@@ -76,7 +76,7 @@ const Projects = () => {
           {projectList.length === 0 ? (
             <div>
               <p className="mt-[30px] font-bold">No projects yet. Create a project to get started.</p>
-            <img src="src\assets\Artboard 1 copy 4.png" alt="Welcome Illustration" className="w-90 h-90 mt-15 ml-70" />
+            <img src="/uploads/Artboard 1 copy 4.png" alt="Welcome Illustration" className="w-90 h-90 mt-15 ml-70" />
             </div>
           ) : (
             <p className="mt-[30px] font-bold">All Projects</p>
