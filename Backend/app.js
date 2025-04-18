@@ -1,61 +1,49 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-const authRoutes = require("./Routes/auth");
-const cors = require('cors');
-const userRoutes = require("./Routes/user");
-const projectRoutes = require("./Routes/project")
-const taskRoutes = require("./Routes/task")
+const cors = require("cors");
 const path = require("path");
 
+const authRoutes = require("./Routes/auth");
+const userRoutes = require("./Routes/user");
+const projectRoutes = require("./Routes/project");
+const taskRoutes = require("./Routes/task");
 
-require('dotenv').config();
-
+dotenv.config();
 
 const app = express();
-app.use(cors({
-    origin: ['http://localhost:5173', 'https://quest-3ica.onrender.com'], // or '*' if you want to allow all, but not recommended with credentials
+
+// ✅ CORS Setup
+app.use(
+  cors({
+    origin: ['http://localhost:5173', 'https://quest-frontend-ib4i.onrender.com'], // frontend URLs only
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-  }));
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 
-
-
-// Middleware
+// ✅ Middleware
 app.use(express.json());
-app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, '../../build')));
-app.options('*', cors({
-    origin: ['http://localhost:5173', 'https://quest-3ica.onrender.com'],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-  }));
 
-app.get('/test-cors', (req, res) => {
-    res.json({ message: 'CORS is working!' });
-}); // Test CORS endpoint
-
-// Routes
+// ✅ Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/projects", projectRoutes);
-app.use("/api/tasks", taskRoutes); // Use task routes
+app.use("/api/tasks", taskRoutes);
 
-
+// ✅ Serve frontend (React build)
+app.use(express.static(path.join(__dirname, 'frontend', 'dist'))); // or 'client/dist' depending on your folder structure
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../build', 'index.html'));
+  res.sendFile(path.join(__dirname, 'frontend', 'dist', 'index.html')); // adjust to correct React build folder
 });
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
-    .then(() => console.log("MongoDB Connected"))
-    .catch((err) => console.error("MongoDB Connection Error:", err));
+// ✅ MongoDB connection
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB Connected"))
+  .catch((err) => console.error("MongoDB Connection Error:", err));
 
 const PORT = process.env.PORT || 5012;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
