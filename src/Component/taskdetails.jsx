@@ -3,7 +3,6 @@ import { updateTask } from "../api/taskService";
 import { X, Trash2, Plus } from "lucide-react";
 import clsx from "clsx";
 import { Link } from "react-router-dom";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
 const TaskDetailsModal = ({ task, onClose, onTaskUpdate }) => {
   const [subtasks, setSubtasks] = useState(
@@ -169,52 +168,6 @@ const TaskDetailsModal = ({ task, onClose, onTaskUpdate }) => {
   const completedSubtasks = subtasks.filter(st => st.completed).length;
   const ongoingSubtasks = totalSubtasks - completedSubtasks;
 
-  // Handle drag end for reordering subtasks with sorted rendering
-  const onDragEnd = async (result) => {
-    if (!result.destination) return;
-
-    // Create sorted subtasks array for rendering
-    const sortedSubtasks = [...subtasks].sort((a, b) => {
-      if (a.completed && !b.completed) return 1;
-      if (!a.completed && b.completed) return -1;
-      return 0;
-    });
-
-    // Reorder sortedSubtasks based on drag result
-    const reorderedSorted = Array.from(sortedSubtasks);
-    const [removed] = reorderedSorted.splice(result.source.index, 1);
-    reorderedSorted.splice(result.destination.index, 0, removed);
-
-    // Map reordered sorted subtasks back to original subtasks order
-    // Create a map from id to subtask
-    const subtaskMap = new Map(subtasks.map(item => [item.id, item]));
-
-    // Build new subtasks array in the order of reorderedSorted
-    const reordered = reorderedSorted.map(item => subtaskMap.get(item.id));
-
-    setSubtasks(reordered);
-
-    // Save reordered subtasks immediately
-    try {
-      const token = localStorage.getItem("token");
-      await updateTask(token, task._id, {
-        subtasks: reordered.map(subtask => ({
-          _id: subtask._id,
-          title: subtask.title,
-          completed: subtask.completed
-        }))
-      });
-      window.dispatchEvent(new Event('taskUpdated'));
-    } catch (error) {
-      console.error("Error saving reordered subtasks:", error);
-    }
-  };
-
-  //DraggableID
-  const getDraggableId = (item) => {
-    return item.id ? String(item.id) : `temp-${Date.now()}`;
-  };
-
   // New functions for editing subtasks
   const startEdit = (item) => {
     setEditingSubtaskId(item.id);
@@ -354,95 +307,77 @@ const TaskDetailsModal = ({ task, onClose, onTaskUpdate }) => {
           <div className="subtask-summary">
             Total: {totalSubtasks} | Ongoing: {ongoingSubtasks} | Completed: {completedSubtasks}
           </div>
-          <DragDropContext onDragEnd={onDragEnd}>
-            <Droppable droppableId="subtasks" isDropDisabled={!!isCancelled} isCombineEnabled={false} ignoreContainerClipping={false}>
-              {(provided) => (
-                <div
-                  {...provided.droppableProps}
-                  ref={provided.innerRef}
-                  className="space-y-3"
-                >
-                  {[...subtasks].sort((a, b) => {
-                    if (a.completed && !b.completed) return 1;
-                    if (!a.completed && b.completed) return -1;
-                    return 0;
-                  }).map((item, index) => (
-                    <Draggable key={getDraggableId(item)} draggableId={getDraggableId(item)} index={index} isDragDisabled={isCancelled}>
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          className={clsx(
-                            "flex items-center justify-between bg-white px-3 py-2 rounded shadow-sm",
-                            isCancelled && "opacity-50 cursor-not-allowed",
-                            snapshot.isDragging && "bg-[#f0e6e8] shadow-lg"
-                          )}
-                        >
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="checkbox"
-                              checked={item.completed}
-                              onChange={() => handleToggleSubtask(item.id)}
-                              disabled={isCancelled}
-                            />
-                            {editingSubtaskId === item.id ? (
-                              <>
-                                <input
-                                  type="text"
-                                  className="border rounded px-2 py-1 text-sm"
-                                  value={editingSubtaskTitle}
-                                  onChange={(e) => setEditingSubtaskTitle(e.target.value)}
-                                  onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                      saveEdit();
-                                    } else if (e.key === 'Escape') {
-                                      cancelEdit();
-                                    }
-                                  }}
-                                  autoFocus
-                                />
-                                <button
-                                  onClick={() => saveEdit()}
-                                  className="ml-2 text-green-600 hover:text-green-800"
-                                  aria-label="Save edit"
-                                >
-                                  ✓
-                                </button>
-                                <button
-                                  onClick={() => cancelEdit()}
-                                  className="ml-1 text-red-600 hover:text-red-800"
-                                  aria-label="Cancel edit"
-                                >
-                                  ✗
-                                </button>
-                              </>
-                            ) : (
-                              <span
-                                className={clsx("text-sm", item.completed && "line-through text-gray-500")}
-                                onDoubleClick={() => startEdit(item)}
-                                style={{ cursor: 'pointer' }}
-                              >
-                                {item.title}
-                              </span>
-                            )}
-                          </div>
-                          <button
-                            onClick={() => handleDeleteSubtask(item.id)}
-                            className="text-gray-500 hover:text-red-500"
-                            disabled={isCancelled}
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
+          <div className="space-y-3">
+            {[...subtasks].sort((a, b) => {
+              if (a.completed && !b.completed) return 1;
+              if (!a.completed && b.completed) return -1;
+              return 0;
+            }).map((item, index) => (
+              <div
+                key={item.id ? String(item.id) : `temp-${Date.now()}`}
+                className={clsx(
+                  "flex items-center justify-between bg-white px-3 py-2 rounded shadow-sm",
+                  isCancelled && "opacity-50 cursor-not-allowed"
+                )}
+              >
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={item.completed}
+                    onChange={() => handleToggleSubtask(item.id)}
+                    disabled={isCancelled}
+                  />
+                  {editingSubtaskId === item.id ? (
+                    <>
+                      <input
+                        type="text"
+                        className="border rounded px-2 py-1 text-sm"
+                        value={editingSubtaskTitle}
+                        onChange={(e) => setEditingSubtaskTitle(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            saveEdit();
+                          } else if (e.key === 'Escape') {
+                            cancelEdit();
+                          }
+                        }}
+                        autoFocus
+                      />
+                      <button
+                        onClick={() => saveEdit()}
+                        className="ml-2 text-green-600 hover:text-green-800"
+                        aria-label="Save edit"
+                      >
+                        ✓
+                      </button>
+                      <button
+                        onClick={() => cancelEdit()}
+                        className="ml-1 text-red-600 hover:text-red-800"
+                        aria-label="Cancel edit"
+                      >
+                        ✗
+                      </button>
+                    </>
+                  ) : (
+                    <span
+                      className={clsx("text-sm", item.completed && "line-through text-gray-500")}
+                      onDoubleClick={() => startEdit(item)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      {item.title}
+                    </span>
+                  )}
                 </div>
-              )}
-            </Droppable>
-          </DragDropContext>
+                <button
+                  onClick={() => handleDeleteSubtask(item.id)}
+                  className="text-gray-500 hover:text-red-500"
+                  disabled={isCancelled}
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="bg-[#ead5da] rounded flex items-center px-3 py-2">
