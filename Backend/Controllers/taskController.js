@@ -184,4 +184,61 @@ const getTask = async (req, res) => {
     }
 };
 
-module.exports = { createTask, getTasks, updateTask, getTask };
+// Controller function to delete a task
+const deleteTask = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (!req.user?.id) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
+
+        const deletedTask = await Task.findOneAndDelete({
+            _id: id,
+            'user.id': req.user.id // Ensure user owns the task
+        });
+
+        if (!deletedTask) {
+            return res.status(404).json({ message: "Task not found or unauthorized" });
+        }
+
+        return res.status(200).json({
+            message: "Task deleted successfully"
+        });
+    } catch (error) {
+        console.error("Task deletion error:", error);
+        return res.status(500).json({
+            message: "Error deleting task",
+            error: error.message
+        });
+    }
+};
+
+// Controller function to fetch tasks by project ID
+const getTasksByProjectId = async (req, res) => {
+    try {
+        const { projectId } = req.params;
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({ message: "User not authenticated" });
+        }
+        const userId = req.user.id;
+
+        const tasks = await Task.find({
+            $and: [
+                { 'project.id': projectId },
+                { $or: [
+                    { "user.id": userId },
+                    { user: userId }
+                ]}
+            ]
+        }).sort({ createdAt: -1 });
+
+
+        res.status(200).json({ tasks });
+    } catch (error) {
+        console.error("Error fetching tasks by project ID:", error);
+        res.status(500).json({ message: "Error fetching tasks by project ID", error: error.message });
+    }
+};
+
+module.exports = { createTask, getTasks, updateTask, getTask, deleteTask, getTasksByProjectId };

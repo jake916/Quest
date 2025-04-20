@@ -1,15 +1,18 @@
 import { useEffect, useState } from "react";
 import React from 'react';
+import { useNavigate } from "react-router-dom";
 import Sidebar from "../Component/sidebar";
 import PageHeader from "../Component/pageheader";
 import { jwtDecode } from "jwt-decode";
 import ProjectCard from "../Component/projectcard";
 import { getProjects } from "../api/projectService";
 
+
 const Projects = () => {
   const [projectList, setProjectList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState("Guest");
+  const navigate = useNavigate();
 
   const token = localStorage.getItem("token"); // Get user token
 
@@ -17,11 +20,7 @@ const Projects = () => {
     const fetchProjects = async () => {
       try {
         const data = await getProjects(token);
-    
-
-    setProjectList(data.projects);
-
-
+        setProjectList(data.projects);
       } catch (error) {
         console.error("Error fetching projects:", error);
       } finally {
@@ -47,20 +46,21 @@ const Projects = () => {
   useEffect(() => {
     const token = localStorage.getItem("token"); // Get user token
     const fetchProjects = async () => {
-        
-
-        try {
-            const data = await getProjects(token);
-            
-            setProjectList(data.projects);
-
-        } catch (error) {
-            console.error("Error fetching projects:", error);
-        }
+      try {
+        const data = await getProjects(token);
+        setProjectList(data.projects);
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+      }
     };
 
     fetchProjects(); // Call the function to fetch projects
-}, []);
+  }, []);
+
+  // Handler to navigate to view project page
+  const handleCardClick = (project) => {
+    navigate(`/viewproject/${project._id}`);
+  };
 
   return (
     <div className="h-screen bg-[#EEEFEF]">
@@ -76,7 +76,7 @@ const Projects = () => {
           {projectList.length === 0 ? (
             <div>
               <p className="mt-[30px] font-bold">No projects yet. Create a project to get started.</p>
-            <img src="/uploads/Artboard 1 copy 4.png" alt="Welcome Illustration" className="w-90 h-90 mt-15 ml-70" />
+              <img src="/uploads/Artboard 1 copy 4.png" alt="Welcome Illustration" className="w-90 h-90 mt-15 ml-70" />
             </div>
           ) : (
             <p className="mt-[30px] font-bold">All Projects</p>
@@ -84,8 +84,12 @@ const Projects = () => {
 
           <div className="grid grid-cols-4 gap-5 mt-[20px]">
             {projectList.map((project, index) => (
-              <ProjectCard key={index} name={project.name} logo={project.projectImage} />
-
+              <ProjectCard
+                key={index}
+                name={project.name}
+                logo={project.projectImage}
+                onClick={() => handleCardClick(project)}
+              />
             ))}
           </div>
         </div>

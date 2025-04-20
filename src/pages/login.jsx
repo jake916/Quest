@@ -30,7 +30,7 @@ const Login = () => {
           throw new Error("Login failed. No token received.");
       }
   
-      // console.log("Login Successful:", token);
+    
       localStorage.setItem("token", token);
       toast.success("Login Successful");
   

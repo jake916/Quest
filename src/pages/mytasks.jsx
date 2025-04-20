@@ -13,15 +13,15 @@ const MyTasks = () => {
     const [selectedTask, setSelectedTask] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [token, setToken] = useState(null);
 
     const fetchTasks = async () => {
-        const token = localStorage.getItem("token");
-        if (token) {
-          try {
+        if (!token) return;
+        try {
             setLoading(true);
             setError(null);
             const response = await getTasks(token);
-            console.log("API response:", response);
+            
             
             if (!response.success) {
               setError(response.message);
@@ -30,7 +30,7 @@ const MyTasks = () => {
             }
       
             const tasksArray = Array.isArray(response.data) ? response.data : [];
-            console.log("Tasks stats:", response.stats);
+           
       
             const normalizedTasks = tasksArray.map(task => ({
               ...task,
@@ -58,15 +58,28 @@ const MyTasks = () => {
           } finally {
             setLoading(false);
           }
-        }
     };
+
+    useEffect(() => {
+        const storedToken = localStorage.getItem("token");
+        if (storedToken) {
+            setToken(storedToken);
+            try {
+                const decodedUser = jwtDecode(storedToken);
+                setUsername(decodedUser?.username || "Guest");
+            } catch (error) {
+                console.error("Invalid token:", error);
+                setUsername("Guest");
+            }
+        }
+    }, []);
 
     useEffect(() => {
         fetchTasks();
         
         // Add event listener for task updates
         const handleTaskUpdated = () => {
-            console.log('Task updated event received - refreshing tasks');
+            
             fetchTasks();
         };
 
@@ -76,20 +89,7 @@ const MyTasks = () => {
         return () => {
             window.removeEventListener('taskUpdated', handleTaskUpdated);
         };
-    }, []);
-
-    useEffect(() => {
-        const token = localStorage.getItem("token");
-        if (token) {
-            try {
-                const decodedUser = jwtDecode(token);
-                setUsername(decodedUser?.username || "Guest");
-            } catch (error) {
-                console.error("Invalid token:", error);
-                setUsername("Guest");
-            }
-        }
-    }, []);
+    }, [token]);
 
     const normalizeStatus = (status) => {
         const mapping = {
@@ -106,6 +106,11 @@ const MyTasks = () => {
     const filteredTasks = Array.isArray(tasks) ?
         (filter === "All" ? tasks : tasks.filter(task => normalizeStatus(task.status) === normalizeStatus(filter)))
         : [];
+
+    // Handler to refresh tasks after deletion
+    const handleTaskDeleted = (deletedTaskId) => {
+        fetchTasks();
+    };
 
     return (
         <div className="h-screen bg-[#EEEFEF] flex">
@@ -157,6 +162,8 @@ const MyTasks = () => {
                                 key={task._id}
                                 task={task}
                                 onClick={() => setSelectedTask(task)}
+                                token={token}
+                                onTaskDeleted={handleTaskDeleted}
                             />
                         ))
                     ) : (

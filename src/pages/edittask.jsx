@@ -35,8 +35,7 @@ const EditTask = () => {
         const taskRes = await getTask(token, taskId);
         
         // Debug logging
-        console.log('Projects:', projects);
-        console.log('Task Project:', taskRes.task.project);
+        
         
         // Normalize project IDs for comparison
         const normalizeId = (id) => String(id).trim().toLowerCase();
@@ -63,8 +62,6 @@ const EditTask = () => {
           _project: currentProject || taskRes.task.project || null
         });
 
-        console.log('Current project ID:', currentProjectId);
-        console.log('Project list:', updatedProjects);
       } catch (error) {
         toast.error("Failed to load task details");
         console.error("Error loading data:", error);

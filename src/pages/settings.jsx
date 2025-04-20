@@ -22,13 +22,13 @@ const settings = () => {
 
   return (
     <div className="h-screen">
-            {/* Sidebar */}
-            <div className="fixed h-screen">
-                <Sidebar username={username} />  {/* Pass username to Sidebar */}
-            </div>
+      {/* Sidebar */}
+      <div className="fixed h-screen">
+        <Sidebar username={username} />  {/* Pass username to Sidebar */}
+      </div>
 
-            {/* Main Content Area */}
-        </div>
+      {/* Main Content Area */}
+    </div>
   )
 }
 

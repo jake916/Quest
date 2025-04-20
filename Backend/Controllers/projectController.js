@@ -36,11 +36,11 @@ const createProject = async (req, res) => {
             projectImage: projectImageUrl,
             user: req.user.id,
         });
-        console.log("Project data to be saved:", newProject); // Log the project data
+        
 
         await newProject.save();
         res.status(201).json({  success: true, message: "Project created successfully", project: newProject });
-        console.log("New project created:", newProject); // Log the created project for debugging
+        
 
     } catch (error) {
         console.error("Error creating project:", error.message); // Log the error message for debugging
@@ -48,10 +48,48 @@ const createProject = async (req, res) => {
     }
 };
 
+const updateProject = async (req, res) => {
+    try {
+        const projectId = req.params.id;
+        const userId = req.user.id;
+
+        const project = await Project.findById(projectId);
+        if (!project) {
+            return res.status(404).json({ success: false, message: "Project not found" });
+        }
+
+        if (project.user.toString() !== userId) {
+            return res.status(403).json({ success: false, message: "Unauthorized to update this project" });
+        }
+
+        const { name, description } = req.body;
+
+        if (req.file) {
+            // Handle file upload properly
+            if (!fs.existsSync(path.join(__dirname, '../../public/uploads'))) {
+                fs.mkdirSync(path.join(__dirname, '../../public/uploads'), { recursive: true });
+            }
+            const uploadPath = path.join(__dirname, '../../public/uploads', req.file.filename);
+            await fs.promises.rename(req.file.path, uploadPath);
+            project.projectImage = `/uploads/${req.file.filename}`;
+        }
+
+        if (name) project.name = name;
+        if (description) project.description = description;
+
+        await project.save();
+
+        res.status(200).json({ success: true, message: "Project updated successfully", project });
+    } catch (error) {
+        console.error("Error updating project:", error.message);
+        res.status(500).json({ success: false, message: "Server error", error: error.message });
+    }
+};
+
 // Fix: Define getProjects function
 const getProjects = async (req, res) => {
     try {
-const projects = await Project.find({ user: req.user.id }).populate("user", "username email");
+        const projects = await Project.find({ user: req.user.id }).populate("user", "username email");
 
         res.status(200).json({ projects });
     } catch (error) {
@@ -72,4 +110,23 @@ const getProjectById = async (req, res) => {
     }
 };
 
-module.exports = { createProject, getProjects, getProjectById };
+// Updated deleteProject controller function using findByIdAndDelete
+const deleteProject = async (req, res) => {
+    try {
+        const project = await Project.findById(req.params.id);
+        if (!project) {
+            return res.status(404).json({ message: "Project not found" });
+        }
+        // Check if req.user.id matches project.user to authorize deletion
+        if (project.user.toString() !== req.user.id) {
+            return res.status(403).json({ message: "Unauthorized to delete this project" });
+        }
+        await Project.findByIdAndDelete(req.params.id);
+        res.status(200).json({ success: true, message: "Project deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting project:", error.stack || error.message || error);
+        res.status(500).json({ message: "Server error during project deletion", error: error.message || error });
+    }
+};
+
+module.exports = { createProject, getProjects, getProjectById, deleteProject, updateProject };

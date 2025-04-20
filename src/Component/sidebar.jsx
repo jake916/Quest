@@ -1,49 +1,54 @@
 import React from "react";
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { FiHome, FiCheckSquare, FiFolder, FiSettings, FiPlus } from "react-icons/fi";
+import { FiHome, FiCheckSquare, FiFolder, FiSettings, FiPlus, FiMenu } from "react-icons/fi";
 import { FaArrowCircleRight } from "react-icons/fa";
 import { getProjects } from "../api/projectService";
+import ProjectImageOrLetter from "./ProjectImageOrLetter";
+
 
 const Sidebar = ({ username, userProjects }) => {
-    const navigate = useNavigate();
-    const location = useLocation();
-    const [projectList, setProjectList] = useState([]); // State for projects
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [projectList, setProjectList] = useState([]); // State for projects
+  const [isOpen, setIsOpen] = useState(false); // Sidebar open state for mobile
 
-    const handleLogout = () => {
-        localStorage.removeItem("token"); // Clear token from local storage
-        navigate("/"); // Redirect to login page
+  const handleLogout = () => {
+    localStorage.removeItem("token"); // Clear token from local storage
+    navigate("/"); // Redirect to login page
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem("token"); // Get user token
+    const fetchProjects = async () => {
+      try {
+        const data = await getProjects(token);
+        setProjectList(data.projects);
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+      }
     };
 
-    useEffect(() => {
-        const token = localStorage.getItem("token"); // Get user token
-        const fetchProjects = async () => {
-            
+    fetchProjects(); // Call the function to fetch projects
+  }, []);
 
-            try {
-                const data = await getProjects(token);
-                setProjectList(data.projects);
+  const toggleSidebar = () => {
+    setIsOpen(!isOpen);
+  };
 
-            } catch (error) {
-                console.error("Error fetching projects:", error);
-            }
-        };
+  return (
+    <>
 
-        fetchProjects(); // Call the function to fetch projects
-    }, []);
-
-    return ( 
-        <div className="w-64 bg-[#72001D] text-white flex flex-col justify-between p-4 overflow-hidden h-screen">
-            {/* Profile Section */}
-            <div>
-                <div className="flex items-center space-x-3">
-                    <img
-                        src="/src/assets/Avatar.png"
-                        alt="Profile"
-                        className="w-10 h-10 rounded-full border-2 border-white"
-                    />
-                    <h2 className="font-semibold text-sm">{username}</h2>
-                </div>
+      {/* Sidebar */}
+      <div className={`bg-[#72001D] text-white flex flex-col justify-between p-4 overflow-hidden h-screen
+        fixed
+      `}>
+        {/* Profile Section */}
+        <div>
+          <div className="flex items-center space-x-3">
+            <ProjectImageOrLetter projectName={username} size={40} />
+            <h2 className="font-semibold text-sm">{username}</h2>
+          </div>
 
                 {/* MAIN Section */}
                 <div className="mt-6">
@@ -80,27 +85,26 @@ const Sidebar = ({ username, userProjects }) => {
                 </div>
 
                 {/* PROJECTS Section */}
-                <div className="mt-6 " > {/* Set max height for scrolling */}
+                <div className="mt-6">
                     <p className="text-xs text-gray-300 uppercase flex justify-between">
                         Projects
                     </p>
-                    <div className="w-full max-h-50 overflow-y-auto hide-scrollbar">
+                    <div className="w-53 max-h-50 overflow-y-auto hide-scrollbar">
                         {projectList.length > 0 ? (
                             projectList.map((project, index) => (
-                                <div
+                                <Link
+                                    to={`/viewproject/${project._id}`}
                                     key={index}
-                                    className="p-1  rounded-lg flex items-center justify-between inline-block"
+                                    className="p-2 rounded-lg flex items-center justify-between inline-block cursor-pointer hover:bg-[#8b0023] mb-1"
                                 >
-                                    <div className="flex items-center gap-2">
-                                        <img src={project.projectImage} alt={project.name} className="w-8 h-8 rounded-full" /> {/* Display project image */}
-                                        <div>
-                                            <p className="font-semibold text-white">{project.name}</p>
-                                        </div>
+                                    <div className="flex items-center space-x-3">
+                                        <ProjectImageOrLetter projectName={project.name} projectImage={project.projectImage} size={30} />
+                                        <p className="font-semibold text-white">{project.name}</p>
                                     </div>
-                                </div>
+                                </Link>
                             ))
                         ) : (
-                            <p className="text-white mt-20">No projects available.</p>
+                            <p className="text-white mt-2">No projects available.</p>
                         )}
                     </div>
                 </div>
@@ -117,7 +121,8 @@ const Sidebar = ({ username, userProjects }) => {
                 </button>
             </div>
         </div>
-    );
+    </>
+  );
 };
 
 export default Sidebar;

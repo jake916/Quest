@@ -31,7 +31,6 @@ export const getTasks = async (token) => {
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    console.log("Raw API response:", res.data); // Debug the actual response
 
     // Handle the response format from your updated backend
     if (res.data && res.data.tasks) {
@@ -110,7 +109,7 @@ export const updateTask = async (token, taskId, updates) => {
 
 export const createTask = async (token, taskData) => {
   try {
-    console.log("Sending task data:", taskData); // Debug data being sent
+    
     
     const res = await axios.post(API_URL, taskData, {
       headers: { 
@@ -119,7 +118,7 @@ export const createTask = async (token, taskData) => {
       }
     });
     
-    console.log("Task creation response:", res.data); // Debug response
+
     
     return {
       success: true,
@@ -134,6 +133,25 @@ export const createTask = async (token, taskData) => {
     return {
       success: false,
       message: errorMessage
+    };
+  }
+};
+
+// Updated deleteTask function to accept token and include in headers
+export const deleteTask = async (token, taskId) => {
+  try {
+    const res = await axios.delete(`${API_URL}/${taskId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return {
+      success: true,
+      message: res.data.message || "Task deleted successfully"
+    };
+  } catch (error) {
+    console.error("Error deleting task:", error.response?.data || error.message);
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message || "Failed to delete task"
     };
   }
 };
