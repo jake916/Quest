@@ -26,7 +26,9 @@ const createProject = async (req, res) => {
                 fs.mkdirSync(path.join(__dirname, '../../public/uploads'), { recursive: true });
             }
             const uploadPath = path.join(__dirname, '../../public/uploads', req.file.filename);
-            await fs.promises.rename(req.file.path, uploadPath);
+            // Use copyFile and unlink to avoid EXDEV error on cross-device rename
+            await fs.promises.copyFile(req.file.path, uploadPath);
+            await fs.promises.unlink(req.file.path);
             projectImageUrl = `/uploads/${req.file.filename}`;
         }
 
@@ -80,7 +82,9 @@ const updateProject = async (req, res) => {
                 fs.mkdirSync(path.join(__dirname, '../../public/uploads'), { recursive: true });
             }
             const uploadPath = path.join(__dirname, '../../public/uploads', req.file.filename);
-            await fs.promises.rename(req.file.path, uploadPath);
+            // Use copyFile and unlink to avoid EXDEV error on cross-device rename
+            await fs.promises.copyFile(req.file.path, uploadPath);
+            await fs.promises.unlink(req.file.path);
             project.projectImage = `/uploads/${req.file.filename}`;
         }
 
