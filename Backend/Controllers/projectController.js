@@ -62,7 +62,17 @@ const updateProject = async (req, res) => {
             return res.status(403).json({ success: false, message: "Unauthorized to update this project" });
         }
 
-        const { name, description } = req.body;
+        const { name, description, removeLogo } = req.body;
+
+        if (removeLogo === 'true' || removeLogo === true) {
+            if (project.projectImage) {
+                const imagePath = path.join(__dirname, '../../public', project.projectImage);
+                if (fs.existsSync(imagePath)) {
+                    await fs.promises.unlink(imagePath);
+                }
+                project.projectImage = null;
+            }
+        }
 
         if (req.file) {
             // Handle file upload properly

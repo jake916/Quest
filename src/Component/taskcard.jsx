@@ -47,6 +47,8 @@ const TaskCard = ({ task, onClick, onTaskDeleted, token }) => {
         setShowConfirm(false);
     };
 
+    const totalSubtasks = task.subtasks ? task.subtasks.length : 0;
+
     return (
         <>
             <div
@@ -80,6 +82,7 @@ const TaskCard = ({ task, onClick, onTaskDeleted, token }) => {
                 </div>
                 <h3 className="text-lg font-bold">{task.name}</h3>
                 <p className="text-sm text-gray-600">{task.description.length > 100 ? task.description.substring(0, 100) + '...' : task.description}</p>
+                <p className="text-sm text-gray-700 mt-1">Subtasks: {totalSubtasks}</p>
 
                 <p className="text-right text-xs text-gray-500"> Due Date: {task.endDate}</p>
 

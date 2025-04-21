@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Sidebar from "../Component/sidebar";
 import PageHeader from "../Component/pageheader";
 import TaskCard from "../Component/taskcard";
@@ -8,12 +8,25 @@ import { getTasks } from "../api/taskService";
 
 const MyTasks = () => {
     const [filter, setFilter] = useState("All");
+    const [priorityFilter, setPriorityFilter] = useState("All");
+    const [sortOption, setSortOption] = useState("None");
+    const [searchQuery, setSearchQuery] = useState("");
     const [tasks, setTasks] = useState([]);
     const [username, setUsername] = useState("Guest");
     const [selectedTask, setSelectedTask] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [loadingProgress, setLoadingProgress] = useState(0);
     const [error, setError] = useState(null);
     const [token, setToken] = useState(null);
+
+    const [filtersOpen, setFiltersOpen] = useState(false);
+    const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
+    const [priorityDropdownOpen, setPriorityDropdownOpen] = useState(false);
+
+    const [sortOpen, setSortOpen] = useState(false);
+
+    const filtersRef = useRef(null);
+    const sortRef = useRef(null);
 
     const fetchTasks = async () => {
         if (!token) return;
@@ -21,7 +34,6 @@ const MyTasks = () => {
             setLoading(true);
             setError(null);
             const response = await getTasks(token);
-            
             
             if (!response.success) {
               setError(response.message);
@@ -31,7 +43,6 @@ const MyTasks = () => {
       
             const tasksArray = Array.isArray(response.data) ? response.data : [];
            
-      
             const normalizedTasks = tasksArray.map(task => ({
               ...task,
               _id: task._id?.toString() || Date.now().toString(),
@@ -77,19 +88,38 @@ const MyTasks = () => {
     useEffect(() => {
         fetchTasks();
         
-        // Add event listener for task updates
         const handleTaskUpdated = () => {
-            
             fetchTasks();
         };
 
         window.addEventListener('taskUpdated', handleTaskUpdated);
         
-        // Clean up event listener
         return () => {
             window.removeEventListener('taskUpdated', handleTaskUpdated);
         };
     }, [token]);
+    
+    useEffect(() => {
+        let interval = null;
+        if (loading && loadingProgress < 100) {
+            interval = setInterval(() => {
+                setLoadingProgress((prev) => {
+                    const nextProgress = prev + 10;
+                    if (nextProgress >= 100) {
+                        clearInterval(interval);
+                        return 100;
+                    }
+                    return nextProgress;
+                });
+            }, 200);
+        } else if (!loading) {
+            setLoadingProgress(100);
+            if (interval) clearInterval(interval);
+        }
+        return () => {
+            if (interval) clearInterval(interval);
+        };
+    }, [loading, loadingProgress]);
 
     const normalizeStatus = (status) => {
         const mapping = {
@@ -102,15 +132,52 @@ const MyTasks = () => {
         return mapping[status] || status.toLowerCase();
     };
 
-    // Ensure filteredTasks is always an array before using .map()
+    const normalizePriority = (priority) => {
+        const mapping = {
+            "High": 1,
+            "Medium": 2,
+            "Low": 3
+        };
+        return mapping[priority] || 4;
+    };
+
     const filteredTasks = Array.isArray(tasks) ?
-        (filter === "All" ? tasks : tasks.filter(task => normalizeStatus(task.status) === normalizeStatus(filter)))
+        tasks.filter(task => {
+            const statusMatch = filter === "All" || normalizeStatus(task.status) === normalizeStatus(filter);
+            const priorityMatch = priorityFilter === "All" || normalizePriority(task.priority) === normalizePriority(priorityFilter);
+            const searchMatch = task.name.toLowerCase().includes(searchQuery.toLowerCase());
+            return statusMatch && priorityMatch && searchMatch;
+        })
         : [];
 
-    // Handler to refresh tasks after deletion
+    const sortedTasks = [...filteredTasks];
+    if (sortOption === "Alphabetically") {
+        sortedTasks.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortOption === "By Priority") {
+        sortedTasks.sort((a, b) => normalizePriority(a.priority) - normalizePriority(b.priority));
+    }
+
     const handleTaskDeleted = (deletedTaskId) => {
         fetchTasks();
     };
+
+    // Close dropdowns if clicked outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (filtersRef.current && !filtersRef.current.contains(event.target)) {
+                setFiltersOpen(false);
+                setStatusDropdownOpen(false);
+                setPriorityDropdownOpen(false);
+            }
+            if (sortRef.current && !sortRef.current.contains(event.target)) {
+                setSortOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     return (
         <div className="h-screen bg-[#EEEFEF] flex">
@@ -119,26 +186,110 @@ const MyTasks = () => {
             </div>
 
             <div className="ml-[200px] w-290 overflow-y-auto h-screen p-5">
-                <PageHeader />
+                <PageHeader searchQuery={searchQuery} onSearchChange={(e) => setSearchQuery(e.target.value)} />
 
                 <div className="flex gap-4 ml-14 mt-5">
-                    {['All', 'To Do', 'Ongoing', 'Cancelled', 'Completed', 'Overdue'].map((status) => (
+                    <div className="relative" ref={filtersRef}>
                         <button
-                            key={status}
-                            className={`px-4 py-2 rounded text-white 
-                                ${status === 'All' ? 'bg-[#800020]' :
-                                    status === 'To Do' ? 'bg-blue-500' :
-                                        status === 'Ongoing' ?  'bg-yellow-500' :
-                                            status === 'Cancelled' ? 'bg-red-500' :
-                                                status === 'Completed' ? 'bg-green-500' :
-                                                    status === 'Overdue' ? 'bg-black' :
-                                                        'bg-gray-300'}
-                                ${filter === status ? ' ring-2 ring-offset-2 ring-gray-800' : ''}`}
-                            onClick={() => setFilter(status)}
+                            className="px-4 py-2 bg-white text-[#800020] rounded"
+                            onClick={() => setFiltersOpen(!filtersOpen)}
                         >
-                            {status}
+                            Filters
                         </button>
-                    ))}
+
+                        {filtersOpen && (
+                            <div className="absolute mt-2 bg-white border border-gray-300 rounded shadow-lg p-4 w-64 z-10">
+                                <div>
+                                    <button
+                                        className="w-full text-left px-3 py-2 border-b border-gray-200"
+                                        onClick={() => {
+                                            setStatusDropdownOpen(!statusDropdownOpen);
+                                            setPriorityDropdownOpen(false);
+                                        }}
+                                    >
+                                        Filter by Status: <span className="font-semibold">{filter}</span>
+                                    </button>
+                                    {statusDropdownOpen && (
+                                        <ul className="border border-gray-200 rounded mt-1 max-h-40 overflow-auto">
+                                            {['All', 'To Do', 'Ongoing', 'Cancelled', 'Completed', 'Overdue'].map((status) => (
+                                                <li
+                                                    key={status}
+                                                    className={`px-3 py-2 cursor-pointer hover:bg-gray-100 ${
+                                                        filter === status ? 'bg-gray-200 font-semibold' : ''
+                                                    }`}
+                                                    onClick={() => {
+                                                        setFilter(status);
+                                                        setStatusDropdownOpen(false);
+                                                        setFiltersOpen(false);
+                                                    }}
+                                                >
+                                                    {status}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
+
+                                <div className="mt-4">
+                                    <button
+                                        className="w-full text-left px-3 py-2 border-b border-gray-200"
+                                        onClick={() => {
+                                            setPriorityDropdownOpen(!priorityDropdownOpen);
+                                            setStatusDropdownOpen(false);
+                                        }}
+                                    >
+                                        Filter by Priority: <span className="font-semibold">{priorityFilter}</span>
+                                    </button>
+                                    {priorityDropdownOpen && (
+                                        <ul className="border border-gray-200 rounded mt-1 max-h-40 overflow-auto">
+                                            {['All', 'High', 'Medium', 'Low'].map((priority) => (
+                                                <li
+                                                    key={priority}
+                                                    className={`px-3 py-2 cursor-pointer hover:bg-gray-100 ${
+                                                        priorityFilter === priority ? 'bg-gray-200 font-semibold' : ''
+                                                    }`}
+                                                    onClick={() => {
+                                                        setPriorityFilter(priority);
+                                                        setPriorityDropdownOpen(false);
+                                                        setFiltersOpen(false);
+                                                    }}
+                                                >
+                                                    {priority}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="relative" ref={sortRef}>
+                        <button
+                            className="px-4 py-2 bg-white text-[#800020] rounded"
+                            onClick={() => setSortOpen(!sortOpen)}
+                        >
+                            Sort: {sortOption}
+                        </button>
+                        {sortOpen && (
+                            <ul className="absolute mt-2 bg-white border border-gray-300 rounded shadow-lg p-2 w-48 z-10">
+                                {["None", "Alphabetically", "By Priority"].map((option) => (
+                                    <li
+                                        key={option}
+                                        className={`px-3 py-2 cursor-pointer hover:bg-gray-100 ${
+                                            sortOption === option ? "bg-gray-200 font-semibold" : ""
+                                        }`}
+                                        onClick={() => {
+                                            setSortOption(option);
+                                            setSortOpen(false);
+                                        }}
+                                    >
+                                        {option}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-4 ml-14 mt-5">
@@ -156,8 +307,8 @@ const MyTasks = () => {
                                 Retry
                             </button>
                         </div>
-                    ) : filteredTasks.length > 0 ? (
-                        filteredTasks.map((task) => (
+                    ) : sortedTasks.length > 0 ? (
+                        sortedTasks.map((task) => (
                             <TaskCard
                                 key={task._id}
                                 task={task}
@@ -179,6 +330,15 @@ const MyTasks = () => {
                     />
                 )}
             </div>
+            {loading && (
+                <div className="fixed inset-0 bg-white bg-opacity-30 flex flex-col items-center justify-center z-50">
+                    <div className="w-64 h-4 bg-gray-300 rounded-full overflow-hidden mb-4">
+                        <div className="h-full bg-red-500 transition-all duration-300" style={{ width: `${loadingProgress}%` }}></div>
+                    </div>
+                    <p>Loading Your Tasks</p>
+                    <div className="text-black text-lg font-semibold">{loadingProgress}%</div>
+                </div>
+            )}
         </div>
     );
 };

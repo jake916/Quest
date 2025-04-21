@@ -4,7 +4,7 @@ import { FiSearch } from "react-icons/fi";
 import { FaPlus } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
-const PageHeader = ({ projectId }) => {
+const PageHeader = ({ projectId, searchQuery, onSearchChange }) => {
   const location = useLocation();
   let headerContent;
 
@@ -30,8 +30,18 @@ const PageHeader = ({ projectId }) => {
       break;
     case location.pathname === '/mytasks':
       headerContent =
-        <div className="flex justify-between items-center p-4 border-b gap-120">
+        <div className="flex justify-between items-center p-4 border-b gap-4">
           <p className="text-[20px] font-bold text-[#72001D] pl-12">My Tasks</p>
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search tasks..."
+              value={searchQuery}
+              onChange={onSearchChange}
+              className="border border-gray-300 rounded-md px-3 py-1 text-black w-60 pl-8"
+            />
+            <FiSearch className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          </div>
           <div className="flex items-center gap-1">
             <Link to="/createtask">
               <button className="bg-[#72001D] text-white px-4 py-2 rounded-lg flex items-center w-40">
@@ -50,8 +60,15 @@ const PageHeader = ({ projectId }) => {
       break;
     case location.pathname === '/projects':
       headerContent =
-        <div className="flex justify-between items-center p-4 border-b gap-120">
+        <div className="flex justify-between items-center p-4 border-b gap-4">
           <p className="text-[20px] font-bold text-[#72001D] pl-17">My Projects</p>
+          <input
+            type="text"
+            placeholder="Search projects..."
+            value={searchQuery}
+            onChange={onSearchChange}
+            className="border bg-white border-red-300 rounded-md px-3 py-1 text-black w-60"
+          />
           <div className="flex items-center gap-1">
             <Link to="/createproject">
               <button className="bg-[#72001D] text-white px-4 py-2 rounded-lg flex items-center w-40">

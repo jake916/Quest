@@ -20,6 +20,7 @@ const EditTask = () => {
   const [projectList, setProjectList] = useState([]);
   const token = localStorage.getItem("token");
   const [loading, setLoading] = useState(true);
+  const [loadingProgress, setLoadingProgress] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -30,12 +31,11 @@ const EditTask = () => {
         // Load projects first
         const projectsRes = await getProjects(token);
         let projects = projectsRes.projects;
+        setLoadingProgress(50);
         
         // Then load task
         const taskRes = await getTask(token, taskId);
-        
-        // Debug logging
-        
+        setLoadingProgress(100);
         
         // Normalize project IDs for comparison
         const normalizeId = (id) => String(id).trim().toLowerCase();
@@ -82,10 +82,10 @@ const EditTask = () => {
       const result = await updateTask(token, taskId, {
         name: taskData.name,
         description: taskData.description,
-project: {
-  id: taskData.project, // Project ID
-  name: taskData._project.name // Project name from the full project object
-}
+        project: {
+          id: taskData.project, // Project ID
+          name: taskData._project.name // Project name from the full project object
+        }
       });
 
       if (result.success) {
@@ -115,94 +115,103 @@ project: {
     }
   }, [token]);
 
-  if (loading) return <div>Loading task details...</div>;
-
   return (
-    <div className="h-screen bg-[#EEEFEF] flex">
-      <div className="fixed h-screen">
-        <Sidebar username={username} userProjects={projectList} />
-      </div>
-      {/* Main section Area */}
-      <div className="ml-[200px] w-300 overflow-y-auto p-6">
-        <PageHeader title="Edit Task" />
+    <>
+      <div className="h-screen bg-[#EEEFEF] flex">
+        <div className="fixed h-screen">
+          <Sidebar username={username} userProjects={projectList} />
+        </div>
+        {/* Main section Area */}
+        <div className="ml-[200px] w-300 overflow-y-auto p-6">
+          <PageHeader title="Edit Task" />
 
-        <form onSubmit={handleSubmit} className="bg--200 w-276 ml-[30px] p-6 rounded-lg shadow-md">
-          <div className="mb-4">
-            <label className="block font-semibold mb-2">Task Name</label>
-            <input
-              type="text"
-              value={taskData.name}
-              onChange={(e) => setTaskData({ ...taskData, name: e.target.value })}
-              className="w-full p-2 border rounded"
-              required
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="bg--200 w-276 ml-[30px] p-6 rounded-lg shadow-md">
+            <div className="mb-4">
+              <label className="block font-semibold mb-2">Task Name</label>
+              <input
+                type="text"
+                value={taskData.name}
+                onChange={(e) => setTaskData({ ...taskData, name: e.target.value })}
+                className="w-full p-2 border rounded"
+                required
+              />
+            </div>
 
-          <div className="mb-4">
-            <label className="block font-semibold mb-2">Description</label>
-            <textarea
-              value={taskData.description}
-              onChange={(e) => setTaskData({ ...taskData, description: e.target.value })}
-              className="w-full p-2 border rounded"
-              rows="4"
-            />
-          </div>
+            <div className="mb-4">
+              <label className="block font-semibold mb-2">Description</label>
+              <textarea
+                value={taskData.description}
+                onChange={(e) => setTaskData({ ...taskData, description: e.target.value })}
+                className="w-full p-2 border rounded"
+                rows="4"
+              />
+            </div>
 
-          <div className="mb-6">
-            <div className="mb-4 p-4 bg-gray-50 rounded-lg">
-              <h3 className="font-semibold text-lg mb-2">Current Project</h3>
-              <div className="text-gray-700">
-                {taskData._project ? (
-                  <p className="font-medium">{taskData._project.name}</p>
-                ) : (
-                  <p className="text-gray-500">No project assigned</p>
-                )}
+            <div className="mb-6">
+              <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+                <h3 className="font-semibold text-lg mb-2">Current Project</h3>
+                <div className="text-gray-700">
+                  {taskData._project ? (
+                    <p className="font-medium">{taskData._project.name}</p>
+                  ) : (
+                    <p className="text-gray-500">No project assigned</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block font-semibold">Assign to New Project</label>
+                <select
+                  value={taskData.project || ""}
+                  onChange={(e) => {
+                    const selectedProject = projectList.find(p => p._id === e.target.value);
+                    setTaskData(prev => ({
+                      ...prev,
+                      project: e.target.value,
+                      _project: selectedProject || null
+                    }));
+                  }}
+                  className="w-full p-3 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">-- Select a project --</option>
+                  {projectList.map(project => (
+                    <option key={project._id} value={project._id}>
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="block font-semibold">Assign to New Project</label>
-              <select
-                value={taskData.project || ""}
-                onChange={(e) => {
-                  const selectedProject = projectList.find(p => p._id === e.target.value);
-                  setTaskData(prev => ({
-                    ...prev,
-                    project: e.target.value,
-                    _project: selectedProject || null
-                  }));
-                }}
-                className="w-full p-3 border rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            <div className="flex justify-end space-x-4">
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
               >
-                <option value="">-- Select a project --</option>
-                {projectList.map(project => (
-                  <option key={project._id} value={project._id}>
-                    {project.name}
-                  </option>
-                ))}
-              </select>
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSaving}
+                className="bg-[#6c0017] text-white px-4 py-2 rounded-lg hover:bg-[#8a001f] disabled:opacity-50"
+              >
+                {isSaving ? 'Saving...' : 'Save Changes'}
+              </button>
             </div>
-          </div>
-
-          <div className="flex justify-end space-x-4">
-            <button
-              type="button"
-              onClick={() => navigate(-1)}
-              className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSaving}
-              className="bg-[#6c0017] text-white px-4 py-2 rounded-lg hover:bg-[#8a001f] disabled:opacity-50"
-            >
-              {isSaving ? 'Saving...' : 'Save Changes'}
-            </button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
+{loading && (
+  <div className="fixed inset-0 bg-white bg-opacity-30 flex flex-col items-center justify-center z-50">
+    <div className="w-64 h-4 bg-gray-300 rounded-full overflow-hidden mb-4">
+      <div className="h-full bg-red-500 transition-all duration-300" style={{ width: `${loadingProgress}%` }}></div>
     </div>
+    <p>Loading Task Details</p>
+    <div className="text-black text-lg font-semibold">{loadingProgress}%</div>
+  </div>
+)}
+    </>
   );
 };
 
