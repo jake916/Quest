@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const Project = require("../Models/project");
 const User = require("../Models/User"); // Import the User model
+const cloudinary = require("../Config/cloudinary"); // Import Cloudinary config
 
 const createProject = async (req, res) => {
     
@@ -21,15 +22,11 @@ const createProject = async (req, res) => {
         let projectImageUrl = null; // No default image
         
         if (req.file) {
-            // Handle file upload properly
-            if (!fs.existsSync(path.join(__dirname, '../../public/uploads'))) {
-                fs.mkdirSync(path.join(__dirname, '../../public/uploads'), { recursive: true });
-            }
-            const uploadPath = path.join(__dirname, '../../public/uploads', req.file.filename);
-            // Use copyFile and unlink to avoid EXDEV error on cross-device rename
-            await fs.promises.copyFile(req.file.path, uploadPath);
-            await fs.promises.unlink(req.file.path);
-            projectImageUrl = `/uploads/${req.file.filename}`;
+            // Upload file to Cloudinary
+            const result = await cloudinary.uploader.upload(req.file.path, {
+                folder: "project_images"
+            });
+            projectImageUrl = result.secure_url;
         }
 
         const newProject = new Project({
@@ -68,24 +65,17 @@ const updateProject = async (req, res) => {
 
         if (removeLogo === 'true' || removeLogo === true) {
             if (project.projectImage) {
-                const imagePath = path.join(__dirname, '../../public', project.projectImage);
-                if (fs.existsSync(imagePath)) {
-                    await fs.promises.unlink(imagePath);
-                }
+                // Note: Skipping deletion from Cloudinary due to lack of public_id
                 project.projectImage = null;
             }
         }
 
         if (req.file) {
-            // Handle file upload properly
-            if (!fs.existsSync(path.join(__dirname, '../../public/uploads'))) {
-                fs.mkdirSync(path.join(__dirname, '../../public/uploads'), { recursive: true });
-            }
-            const uploadPath = path.join(__dirname, '../../public/uploads', req.file.filename);
-            // Use copyFile and unlink to avoid EXDEV error on cross-device rename
-            await fs.promises.copyFile(req.file.path, uploadPath);
-            await fs.promises.unlink(req.file.path);
-            project.projectImage = `/uploads/${req.file.filename}`;
+            // Upload file to Cloudinary
+            const result = await cloudinary.uploader.upload(req.file.path, {
+                folder: "project_images"
+            });
+            project.projectImage = result.secure_url;
         }
 
         if (name) project.name = name;
