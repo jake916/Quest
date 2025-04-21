@@ -140,6 +140,19 @@ const fetchProjects = async () => {
                       className="absolute inset-0 opacity-0 cursor-pointer"
                       onChange={handleFileChange}
                     />
+                    { (imagePreview || projectImage) && (
+                      <button
+                        type="button"
+                        className="absolute top-0 right-0 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-700"
+                        onClick={() => {
+                          setProjectImage(null);
+                          setImagePreview(null);
+                        }}
+                        aria-label="Remove project logo"
+                      >
+                        &times;
+                      </button>
+                    )}
                   </div>
                 </div>
 
