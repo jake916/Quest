@@ -141,6 +141,39 @@ const EditProject = () => {
                       className="absolute inset-0 opacity-0 cursor-pointer"
                       onChange={handleFileChange}
                     />
+                    {imagePreview && (
+                      <button
+                        type="button"
+                        className="absolute top-0 right-0 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-700"
+                        onClick={async () => {
+                          if (!token || !projectId) {
+                            toast.error("Missing authentication or project ID");
+                            return;
+                          }
+                          try {
+                            setLoading(true);
+                            const formData = new FormData();
+                            formData.append("removeLogo", "true");
+                            const response = await updateProject(token, projectId, formData);
+                            if (response && response.success) {
+                              toast.success("Project logo removed successfully");
+                              setImagePreview(null);
+                              setProjectImage(null);
+                            } else {
+                              toast.error(response?.message || "Failed to remove project logo");
+                            }
+                          } catch (error) {
+                            console.error("Error removing project logo:", error);
+                            toast.error("Error removing project logo");
+                          } finally {
+                            setLoading(false);
+                          }
+                        }}
+                        aria-label="Remove project logo"
+                      >
+                        &times;
+                      </button>
+                    )}
                   </div>
                 </div>
 
