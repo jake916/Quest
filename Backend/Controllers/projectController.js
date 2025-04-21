@@ -22,11 +22,16 @@ const createProject = async (req, res) => {
         let projectImageUrl = null; // No default image
         
         if (req.file) {
-            // Upload file to Cloudinary
-            const result = await cloudinary.uploader.upload(req.file.path, {
-                folder: "project_images"
-            });
-            projectImageUrl = result.secure_url;
+            // Upload file to Cloudinary with error handling
+            try {
+                const result = await cloudinary.uploader.upload(req.file.path, {
+                    folder: "project_images"
+                });
+                projectImageUrl = result.secure_url;
+            } catch (uploadError) {
+                console.error("Cloudinary upload error:", uploadError);
+                return res.status(500).json({ success: false, message: "Image upload failed", error: uploadError.message });
+            }
         }
 
         const newProject = new Project({
@@ -71,11 +76,16 @@ const updateProject = async (req, res) => {
         }
 
         if (req.file) {
-            // Upload file to Cloudinary
-            const result = await cloudinary.uploader.upload(req.file.path, {
-                folder: "project_images"
-            });
-            project.projectImage = result.secure_url;
+            // Upload file to Cloudinary with error handling
+            try {
+                const result = await cloudinary.uploader.upload(req.file.path, {
+                    folder: "project_images"
+                });
+                project.projectImage = result.secure_url;
+            } catch (uploadError) {
+                console.error("Cloudinary upload error:", uploadError);
+                return res.status(500).json({ success: false, message: "Image upload failed", error: uploadError.message });
+            }
         }
 
         if (name) project.name = name;
