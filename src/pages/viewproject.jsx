@@ -240,9 +240,8 @@ const ViewProject = () => {
                           {['All', 'To Do', 'Ongoing', 'Cancelled', 'Completed', 'Overdue'].map((status) => (
                             <li
                               key={status}
-                              className={`px-3 py-2 cursor-pointer hover:bg-gray-100 ${
-                                filter === status ? 'bg-gray-200 font-semibold' : ''
-                              }`}
+                              className={`px-3 py-2 cursor-pointer hover:bg-gray-100 ${filter === status ? 'bg-gray-200 font-semibold' : ''
+                                }`}
                               onClick={() => {
                                 setFilter(status);
                                 setStatusDropdownOpen(false);
@@ -271,9 +270,8 @@ const ViewProject = () => {
                           {['All', 'High', 'Medium', 'Low'].map((priority) => (
                             <li
                               key={priority}
-                              className={`px-3 py-2 cursor-pointer hover:bg-gray-100 ${
-                                priorityFilter === priority ? 'bg-gray-200 font-semibold' : ''
-                              }`}
+                              className={`px-3 py-2 cursor-pointer hover:bg-gray-100 ${priorityFilter === priority ? 'bg-gray-200 font-semibold' : ''
+                                }`}
                               onClick={() => {
                                 setPriorityFilter(priority);
                                 setPriorityDropdownOpen(false);
@@ -300,9 +298,8 @@ const ViewProject = () => {
                       {["None", "Alphabetically", "By Priority"].map((option) => (
                         <li
                           key={option}
-                          className={`px-3 py-2 cursor-pointer hover:bg-gray-100 ${
-                            sortOption === option ? "bg-gray-200 font-semibold" : ""
-                          }`}
+                          className={`px-3 py-2 cursor-pointer hover:bg-gray-100 ${sortOption === option ? "bg-gray-200 font-semibold" : ""
+                            }`}
                           onClick={() => {
                             setSortOption(option);
                             setSortOpen(false);
@@ -315,7 +312,16 @@ const ViewProject = () => {
                   )}
                 </div>
               </div>
-
+              <div className='flex '>
+                  <p className='text-xl font-bold mb-4 mt-5'> Tasks </p>
+              <button
+                className="mb-5 bg-white text-[#800020] ml-200 rounded"
+                onClick={handleAddTaskClick}
+              >
+                Add Task
+              </button>
+                    
+              </div>
               {loadingTasks ? (
                 <p>Loading tasks...</p>
               ) : sortedTasks && sortedTasks.length > 0 ? (

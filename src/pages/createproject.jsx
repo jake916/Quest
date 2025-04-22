@@ -17,8 +17,34 @@ const CreateProject = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(false);
   const [projectList, setProjectList] = useState([]);
+  const [loadingProjects, setLoadingProjects] = useState(true); // Loading state for fetching projects
+  const [loadingProgress, setLoadingProgress] = useState(0); // Progress percentage
 
   const token = localStorage.getItem("token");
+
+  // Function to simulate progress increase
+  const simulateProgress = (startFrom = 0) => {
+    setLoadingProgress(startFrom);
+    
+    // Reset to starting point
+    const incrementProgress = () => {
+      setLoadingProgress(prev => {
+        // Increase more slowly as we approach 90%
+        let increment;
+        if (prev < 30) increment = Math.random() * 10;
+        else if (prev < 60) increment = Math.random() * 5;
+        else if (prev < 85) increment = Math.random() * 3;
+        else increment = Math.random() * 0.5;
+        
+        const newProgress = Math.min(prev + increment, 90); // Cap at 90% until complete
+        return newProgress;
+      });
+    };
+    
+    // Start incremental progress
+    const intervalId = setInterval(incrementProgress, 300);
+    return intervalId;
+  };
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -57,7 +83,14 @@ const CreateProject = () => {
 
     try {
       setLoading(true);
+      // Start progress simulation for project creation
+      const progressInterval = simulateProgress();
+      
       const response = await createProject(formData, token);
+      
+      // Set progress to 100% when complete
+      setLoadingProgress(100);
+      clearInterval(progressInterval);
       
       if (response && response.success) {
         toast.success(response.message || "Project created successfully!", {
@@ -71,6 +104,8 @@ const CreateProject = () => {
       }
     } catch (error) {
       console.error("Error creating project:", error);
+      setLoadingProgress(0);
+      
       if (error.response?.status === 401) {
         toast.error("Session expired. Please login again.");
         localStorage.removeItem("token");
@@ -79,7 +114,9 @@ const CreateProject = () => {
         toast.error(error.message || "Error creating project");
       }
     } finally {
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+      }, 500);
     }
   };
 
@@ -96,14 +133,30 @@ const CreateProject = () => {
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem("token"); // Get user token
-const fetchProjects = async () => {
-        try {
-            const data = await getProjects(token);
-            setProjectList(data.projects);
-        } catch (error) {
-            console.error("Error fetching projects:", error);
-        }
+    const token = localStorage.getItem("token");
+    
+    const fetchProjects = async () => {
+      setLoadingProjects(true);
+      // Start progress simulation for loading projects
+      const progressInterval = simulateProgress();
+      
+      try {
+        const data = await getProjects(token);
+        // Set progress to 100% when complete
+        setLoadingProgress(100);
+        clearInterval(progressInterval);
+        
+        setProjectList(data.projects);
+        
+        // Small delay to show 100% before hiding loader
+        setTimeout(() => {
+          setLoadingProjects(false);
+        }, 300);
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+        setLoadingProgress(0);
+        setLoadingProjects(false);
+      }
     };
 
     fetchProjects(); // Call the function to fetch projects
@@ -119,6 +172,22 @@ const fetchProjects = async () => {
 
         <div className="bg-gray-100 ml-[200px] w-300 overflow-y-auto p-6">
           <PageHeader title="Create Project" />
+          
+          {/* Loading Overlay */}
+          {loadingProjects && (
+            <div className="fixed inset-0 bg-white bg-opacity-70 flex flex-col items-center justify-center z-50">
+              <div className="bg-white p-8 rounded-lg shadow-lg flex flex-col items-center">
+                <div className="w-64 h-4 bg-gray-200 rounded-full overflow-hidden mb-4">
+                  <div 
+                    className="h-full bg-red-600 transition-all duration-300" 
+                    style={{ width: `${loadingProgress}%` }}
+                  ></div>
+                </div>
+                <p className="text-lg font-medium">Loading Page to Create your Projects ({Math.round(loadingProgress)}%)</p>
+              </div>
+            </div>
+          )}
+          
           <div className="flex items-center p-6">
             <div className="ml-[30px] mt-[1px] rounded-lg w-200 max-w-2xl">
               <h2 className="text-xl font-bold text-red-800">Project Details</h2>
@@ -131,7 +200,7 @@ const fetchProjects = async () => {
                   <div className="relative w-24 h-24 mt-2">
                     <img
                       src={imagePreview || projectImage || DEFAULT_LOGO}
-                      alt="src\assets\iconwine.png"
+                      alt="Project Logo"
                       className="w-full h-full rounded-full object-cover border"
                     />
                     <input
@@ -180,14 +249,29 @@ const fetchProjects = async () => {
                   ></textarea>
                 </div>
 
-                {/* Submit Button */}
-                <button
-                  type="submit"
-                  className="w-full bg-red-800 text-white p-3 rounded-lg font-semibold hover:bg-red-900"
-                  disabled={loading}
-                >
-                  {loading ? "Creating..." : "Create Project"}
-                </button>
+                {/* Submit Button with Progress */}
+                {loading ? (
+                  <button
+                    type="button"
+                    disabled
+                    className="w-full bg-red-800 text-white p-3 rounded-lg font-semibold relative overflow-hidden"
+                  >
+                    <div className="absolute inset-0 flex items-center justify-center z-10">
+                      Creating Project ({Math.round(loadingProgress)}%)
+                    </div>
+                    <div 
+                      className="absolute top-0 left-0 h-full bg-red-700 transition-all duration-300" 
+                      style={{ width: `${loadingProgress}%`, opacity: '0.6' }}
+                    ></div>
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    className="w-full bg-red-800 text-white p-3 rounded-lg font-semibold hover:bg-red-900"
+                  >
+                    Create Project
+                  </button>
+                )}
               </form>
             </div>
           </div>

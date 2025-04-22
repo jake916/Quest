@@ -188,7 +188,7 @@ const MyTasks = () => {
             <div className="ml-[200px] w-290 overflow-y-auto h-screen p-5">
                 <PageHeader searchQuery={searchQuery} onSearchChange={(e) => setSearchQuery(e.target.value)} />
 
-                <div className="flex gap-4 ml-14 mt-5">
+                <div className="flex justify-end gap-4 ml-14 mt-5">
                     <div className="relative" ref={filtersRef}>
                         <button
                             className="px-4 py-2 bg-white text-[#800020] rounded"
