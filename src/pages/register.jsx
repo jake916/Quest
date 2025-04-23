@@ -4,7 +4,6 @@ import { Eye, EyeOff } from "lucide-react";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { API_URL } from '../api/auth';
-import group6Image from '../assets/Group 6.png';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -73,104 +72,141 @@ const Register = () => {
   };
 
   return (
-    <div className="flex h-screen bg-white">
+    <div style={{ 
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      minHeight: '100vh',
+      width: '100%',
+      backgroundColor: 'white'
+    }}>
       <ToastContainer />
 
-      <div
-        className="w-150 h-110 relative flex items-center justify-center bg-cover bg-center rounded-xl mt-10 mb-10 ml-5"
-        style={{ backgroundImage: `url(${group6Image})` }}
-      >
-        <div className="absolute inset-0 bg-primary/80 rounded-r-lg"></div>
-        <div className="relative text-white text-center px-8">
-          <h2 className="text-4xl font-bold">Boost Productivity,<br />Accomplish More</h2>
+      {/* Form Container - Centered */}
+      <div style={{
+        width: '100%',
+        maxWidth: '400px',
+        padding: '2rem',
+        backgroundColor: 'white',
+        borderRadius: '8px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+        margin: '0 auto'
+      }}>
+        <div className="max-w-md w-full">
+          <h2 className="text-2xl md:text-3xl font-bold text-black mb-6">Create your Account</h2>
+
+          <form style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }} onSubmit={handleSubmit}>
+            <div>
+              <label style={{ display: 'block', color: '#374151', marginBottom: '0.25rem', fontWeight: '500' }}>Username</label>
+              <input
+                type="text"
+                name="username"
+                placeholder="Enter your Username"
+                value={formData.username}
+                onChange={handleChange}
+                style={{ 
+                  width: '100%', 
+                  padding: '0.5rem 1rem', 
+                  border: '1px solid #D1D5DB', 
+                  borderRadius: '0.5rem', 
+                  backgroundColor: 'white', 
+                  color: 'black'
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', color: '#374151', marginBottom: '0.25rem', fontWeight: '500' }}>Email</label>
+              <input
+                type="email"
+                name="email"
+                placeholder="hello@quest.com"
+                value={formData.email}
+                onChange={handleChange}
+                style={{ 
+                  width: '100%', 
+                  padding: '0.5rem 1rem', 
+                  border: '1px solid #D1D5DB', 
+                  borderRadius: '0.5rem', 
+                  backgroundColor: 'white', 
+                  color: 'black'
+                }}
+              />
+            </div>
+
+            <div className="relative">
+              <label style={{ display: 'block', color: '#374151', marginBottom: '0.25rem', fontWeight: '500' }}>Password</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Enter Your Password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  style={{ 
+                    width: '100%', 
+                    padding: '0.5rem 1rem', 
+                    border: '1px solid #D1D5DB', 
+                    borderRadius: '0.5rem', 
+                    backgroundColor: 'white', 
+                    color: 'black'
+                  }}
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-3 flex items-center text-gray-500"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{ background: "none", border: "none", padding: "0" }}
+                >
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+            </div>
+
+            <div className="relative">
+              <label style={{ display: 'block', color: '#374151', marginBottom: '0.25rem', fontWeight: '500' }}>Re-Enter Password</label>
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  placeholder="Enter your Password Again"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  style={{ 
+                    width: '100%', 
+                    padding: '0.5rem 1rem', 
+                    border: '1px solid #D1D5DB', 
+                    borderRadius: '0.5rem', 
+                    backgroundColor: 'white', 
+                    color: 'black'
+                  }}
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-3 flex items-center text-gray-500"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  style={{ background: "none", border: "none", padding: "0" }}
+                >
+                  {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-red-500 hover:bg-red-600 transition-colors text-white px-4 py-2 rounded-lg"
+              disabled={loading}
+            >
+              {loading ? "Creating..." : "Create Account"}
+            </button>
+          </form>
+
+          <p className="text-center text-gray-500 mt-6">
+            Already have an Account?{" "}
+            <a href="/" className="text-red-500 font-bold hover:underline">Sign In</a>
+          </p>
         </div>
-      </div>
-
-      <div className="w-186 flex flex-col justify-center px-16 mb-5">
-        <h2 className="text-3xl font-bold text-black">Create your Account</h2>
-
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div>
-            <label className="block text-gray-700">Username</label>
-            <input
-              type="text"
-              name="username"
-              placeholder="Enter your Username"
-              value={formData.username}
-              onChange={handleChange}
-              className="w-120 px-4 py-2 border rounded-lg bg-white text-black"
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-700">Email</label>
-            <input
-              type="email"
-              name="email"
-              placeholder="hello@quest.com"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-120 px-4 py-2 border rounded-lg bg-white text-black"
-            />
-          </div>
-
-          <div className="relative">
-            <label className="block text-gray-700">Password</label>
-            <div className="relative w-120">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                placeholder="Enter Your Password"
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-lg bg-white text-black pr-10"
-              />
-              <button
-                type="button"
-                className="absolute inset-y-0 right-3 flex items-center text-gray-500"
-                onClick={() => setShowPassword(!showPassword)}
-                style={{ background: "none", border: "none", padding: "0" }}
-              >
-                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-          </div>
-
-          <div className="relative">
-            <label className="block text-gray-700">Re-Enter Password</label>
-            <div className="relative w-120">
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                name="confirmPassword"
-                placeholder="Enter your Password Again"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-lg bg-white text-black pr-10"
-              />
-              <button
-                type="button"
-                className="absolute inset-y-0 right-3 flex items-center text-gray-500"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                style={{ background: "none", border: "none", padding: "0" }}
-              >
-                {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-              </button>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            className="w-120 bg-red-500 text-white px-4 py-2 rounded-lg"
-            disabled={loading}
-          >
-            {loading ? "Creating..." : "Create Account"}
-          </button>
-        </form>
-
-        <p className="text-center text-gray-500 mt-4 mr-25">
-          Already have an Account?{" "}
-          <a href="/" className="text-red font-bold">Sign In</a>
-        </p>
       </div>
     </div>
   );

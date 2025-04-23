@@ -4,7 +4,7 @@ import PageHeader from "../Component/pageheader";
 import TaskCard from "../Component/taskcard";
 import TaskDetailsModal from "../Component/taskdetails";
 import { jwtDecode } from "jwt-decode";
-import { getTasks } from "../api/taskService";
+import { getTasks, updateTask } from "../api/taskService";
 
 const MyTasks = () => {
     const [filter, setFilter] = useState("All");
@@ -60,8 +60,32 @@ const MyTasks = () => {
               startDate: task.startDate ? new Date(task.startDate).toLocaleDateString() : 'Not set',
               endDate: task.endDate ? new Date(task.endDate).toLocaleDateString() : 'Not set'
             }));
-      
-            setTasks(normalizedTasks);
+
+            // Check for overdue tasks and update status if needed
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const updatedTasks = await Promise.all(normalizedTasks.map(async (task) => {
+                if (
+                    task.status !== "Completed" &&
+                    task.status !== "Cancelled" &&
+                    task.status !== "Overdue" &&
+                    task.endDate !== "Not set"
+                ) {
+                    const taskDueDate = new Date(task.endDate);
+                    taskDueDate.setHours(0, 0, 0, 0);
+                    if (taskDueDate < today) {
+                        // Update status to Overdue via API
+                        const updateResponse = await updateTask(token, task._id, { status: "Overdue" });
+                        if (updateResponse.success) {
+                            return { ...task, status: "Overdue" };
+                        }
+                    }
+                }
+                return task;
+            }));
+
+            setTasks(updatedTasks);
           } catch (error) {
             console.error("Task fetch error:", error);
             setError(error.message || "Failed to load tasks");
