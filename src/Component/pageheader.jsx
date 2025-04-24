@@ -33,7 +33,17 @@ const PageHeader = ({ projectId, searchQuery, onSearchChange, hideSearch }) => {
         headerContent = <p className="text-lg font-bold text-black p-4 text-center">Dashboard</p>;
         break;
       case location.pathname === '/mytasks':
-        headerContent = <p className="text-lg font-bold text-[#72001D] p-4 text-left">My Tasks</p>;
+        headerContent = (
+          <div className="flex justify-between items-center p-4">
+            <p className="text-lg font-bold text-[#72001D]">My Tasks</p>
+            <Link to="/createtask">
+              <button className="bg-[#72001D] text-white px-3 py-1 rounded-lg flex items-center text-sm">
+                <FaPlus className="mr-1" />
+                New Task
+              </button>
+            </Link>
+          </div>
+        );
         break;
       case location.pathname === '/createtask':
         headerContent = <p className="text-lg font-bold text-[#72001D] p-4 text-left">Create Task</p>;
