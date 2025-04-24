@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { FiHome, FiCheckSquare, FiFolder, FiSettings } from "react-icons/fi";
-import { FaArrowCircleRight } from "react-icons/fa";
+import { FaArrowCircleRight, FaBars } from "react-icons/fa";
 import { getProjects } from "../api/projectService";
 import ProjectImageOrLetter from "./ProjectImageOrLetter";
 import ConfirmModal from "./ConfirmModal";
@@ -9,13 +9,26 @@ import ConfirmModal from "./ConfirmModal";
 const Sidebar = ({ username, userProjects }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [projectList, setProjectList] = useState([]); // State for projects
-  const [isOpen, setIsOpen] = useState(false); // Sidebar open state for mobile
+  const [projectList, setProjectList] = useState([]);
+  const [isOpen, setIsOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token"); // Clear token from local storage
-    navigate("/"); // Redirect to login page
+    localStorage.removeItem("token");
+    navigate("/");
   };
 
   const onLogoutClick = () => {
@@ -32,7 +45,7 @@ const Sidebar = ({ username, userProjects }) => {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("token"); // Get user token
+    const token = localStorage.getItem("token");
     const fetchProjects = async () => {
       try {
         const data = await getProjects(token);
@@ -42,19 +55,147 @@ const Sidebar = ({ username, userProjects }) => {
       }
     };
 
-    fetchProjects(); // Call the function to fetch projects
+    fetchProjects();
   }, []);
 
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
 
+  // Mobile view (< 768px)
+  if (windowWidth < 768) {
+    return (
+      <>
+        {/* Mobile Top Profile Section */}
+        {/* <div className="fixed top-0 left-0 z-10 p-2 bg-[#72001D]">
+          <ProjectImageOrLetter projectName={username} size={40} />
+        </div> */}
+
+        {/* Mobile Bottom Navigation */}
+        <div className="fixed bottom-0 left-0 right-0 bg-white flex justify-around items-center h-16 z-10 border-t border-gray-200">
+          <Link to="/dashboard" className={`flex flex-col items-center ${location.pathname === '/dashboard' ? 'text-[#72001D]' : 'text-gray-600'}`}>
+            <FiHome className="text-lg" />
+            <span className="text-xs">Home</span>
+          </Link>
+
+          <Link to="/projects" className={`flex flex-col items-center ${['/projects', '/createproject'].includes(location.pathname) ? 'text-[#72001D]' : 'text-gray-600'}`}>
+            <FiFolder className="text-lg" />
+            <span className="text-xs">Projects</span>
+          </Link>
+
+          <Link to="/mytasks" className={`flex flex-col items-center ${['/mytasks', '/createtask', '/edittask'].includes(location.pathname) ? 'text-[#72001D]' : 'text-gray-600'}`}>
+            <FiCheckSquare className="text-lg" />
+            <span className="text-xs">Tasks</span>
+          </Link>
+
+          <Link to="/settings" className={`flex flex-col items-center ${location.pathname === '/settings' ? 'text-[#72001D]' : 'text-gray-600'}`}>
+            <FiSettings className="text-lg" />
+            <span className="text-xs">Settings</span>
+          </Link>
+        </div>
+
+        {showLogoutConfirm && (
+          <ConfirmModal
+            message="Are you sure you want to logout?"
+            onConfirm={onConfirmLogout}
+            onCancel={onCancelLogout}
+          />
+        )}
+      </>
+    );
+  }
+
+  // Tablet view (vertical) (768px - 1024px)
+  if (windowWidth >= 768 && windowWidth < 1024) {
+    return (
+      <>
+        <div className="bg-[#72001D] text-white flex flex-col p-4 h-screen fixed left-0 top-0 z-10 w-16">
+          {/* Profile Section */}
+          <div className="flex flex-col items-center mb-6">
+            <ProjectImageOrLetter projectName={username} size={40} />
+          </div>
+
+          {/* MAIN Section */}
+          <div className="flex flex-col items-center space-y-6 flex-grow">
+            <Link to="/dashboard">
+              {location.pathname === '/dashboard' ? (
+                <div className="p-2 rounded-lg bg-white">
+                  <FiHome className="text-2xl text-[#72001D]" />
+                </div>
+              ) : (
+                <div className="p-2">
+                  <FiHome className="text-2xl text-white" />
+                </div>
+              )}
+            </Link>
+
+            <Link to="/projects">
+              {['/projects', '/createproject'].includes(location.pathname) ? (
+                <div className="p-2 rounded-lg bg-white">
+                  <FiFolder className="text-2xl text-[#72001D]" />
+                </div>
+              ) : (
+                <div className="p-2">
+                  <FiFolder className="text-2xl text-white" />
+                </div>
+              )}
+            </Link>
+
+            <Link to="/mytasks">
+              {['/mytasks', '/createtask', '/edittask'].includes(location.pathname) ? (
+                <div className="p-2 rounded-lg bg-white">
+                  <FiCheckSquare className="text-2xl text-[#72001D]" />
+                </div>
+              ) : (
+                <div className="p-2">
+                  <FiCheckSquare className="text-2xl text-white" />
+                </div>
+              )}
+            </Link>
+
+            <Link to="/settings">
+              {location.pathname === '/settings' ? (
+                <div className="p-2 rounded-lg bg-white">
+                  <FiSettings className="text-2xl text-[#72001D]" />
+                </div>
+              ) : (
+                <div className="p-2">
+                  <FiSettings className="text-2xl text-white" />
+                </div>
+              )}
+            </Link>
+          </div>
+
+          {/* Logout Button */}
+          <div className="mt-auto flex justify-center">
+            <button onClick={onLogoutClick} className="p-2 text-white">
+              <FaArrowCircleRight className="text-2xl" />
+            </button>
+          </div>
+        </div>
+        
+        {/* Main content margin */}
+        <div className="ml-16">
+          {/* Your main content will go here */}
+        </div>
+
+        {showLogoutConfirm && (
+          <ConfirmModal
+            message="Are you sure you want to logout?"
+            onConfirm={onConfirmLogout}
+            onCancel={onCancelLogout}
+          />
+        )}
+      </>
+    );
+  }
+
+  // Desktop/Laptop view (≥ 1024px)
   return (
     <>
-      {/* Sidebar */}
-      <div className={`bg-[#72001D] text-white flex flex-col justify-between p-4 overflow-hidden h-screen fixed`}>
+      <div className="bg-[#72001D] text-white flex flex-col h-screen fixed left-0 top-0 z-10 w-64 overflow-hidden">
         {/* Profile Section */}
-        <div>
+        <div className="p-4">
           <div className="flex items-center space-x-3">
             <ProjectImageOrLetter projectName={username} size={40} />
             <h2 className="font-semibold text-sm">{username}</h2>
@@ -81,7 +222,7 @@ const Sidebar = ({ username, userProjects }) => {
               <Link to="/mytasks">
                 <li className={`flex items-center space-x-2 ${['/mytasks', '/createtask', '/edittask'].includes(location.pathname) ? 'bg-white text-black' : 'text-white'} px-3 py-2 rounded-lg cursor-pointer`}>
                   <FiCheckSquare className="text-lg" />
-                  <span className="text-sm ">My Tasks</span>
+                  <span className="text-sm">My Tasks</span>
                 </li>
               </Link>
 
@@ -99,37 +240,42 @@ const Sidebar = ({ username, userProjects }) => {
             <p className="text-xs text-gray-300 uppercase flex justify-between">
               Projects
             </p>
-            <div className="w-53 max-h-50 overflow-y-auto hide-scrollbar">
+            <div className="max-h-48 overflow-y-auto hide-scrollbar pr-2">
               {projectList.length > 0 ? (
                 projectList.map((project, index) => (
                   <Link
                     to={`/viewproject/${project._id}`}
                     key={index}
-                    className="p-2 rounded-lg flex items-center justify-between inline-block cursor-pointer hover:bg-[#8b0023] mb-1"
+                    className="p-2 rounded-lg flex items-center justify-between cursor-pointer hover:bg-[#8b0023] mb-1"
                   >
                     <div className="flex items-center space-x-3">
                       <ProjectImageOrLetter projectName={project.name} projectImage={project.projectImage} size={30} />
-                      <p className="font-semibold text-white">{project.name}</p>
+                      <p className="font-semibold text-white text-sm truncate max-w-36">{project.name}</p>
                     </div>
                   </Link>
                 ))
               ) : (
-                <p className="text-white mt-2">No projects available.</p>
+                <p className="text-white mt-2 text-sm">No projects available.</p>
               )}
             </div>
           </div>
         </div>
 
         {/* Logout Button */}
-        <div className="p-4 rounded-lg text-center" style={{ position: 'absolute', bottom: '20px', left: '0', right: '0' }}>
+        <div className="p-4 mt-auto">
           <button
             onClick={onLogoutClick}
-            className="mt-3 bg-[#FF004D] text-white px-4 py-2 rounded-lg flex items-center justify-center w-full"
+            className="bg-[#FF004D] text-white px-4 py-2 rounded-lg flex items-center justify-center w-full"
           >
             <FaArrowCircleRight className="mr-2 text-sm" />
             Logout
           </button>
         </div>
+      </div>
+
+      {/* Main content margin */}
+      <div className="ml-64">
+        {/* Your main content will go here */}
       </div>
 
       {showLogoutConfirm && (

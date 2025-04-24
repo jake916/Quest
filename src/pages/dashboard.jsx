@@ -8,7 +8,6 @@ import { getProjects } from "../api/projectService";
 import TaskDetailsModal from "../Component/taskdetails";
 import ProjectImageOrLetter from "../Component/ProjectImageOrLetter";
 
-
 const Dashboard = () => {
     const navigate = useNavigate();
     const [username, setUsername] = useState("Guest");
@@ -26,57 +25,68 @@ const Dashboard = () => {
     const [selectedTask, setSelectedTask] = useState(null);
     const [loading, setLoading] = useState(true);
     const [loadingProgress, setLoadingProgress] = useState(0);
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
+    // Handle window resize
+    useEffect(() => {
+        const handleResize = () => {
+            setWindowWidth(window.innerWidth);
+        };
 
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
 
-const fetchTasks = async () => {
-    const token = localStorage.getItem("token");
-    try {
-        const response = await getTasks(token);
-        let tasks = [];
-        if (Array.isArray(response)) {
-            tasks = response;
-        } else if (response.data && Array.isArray(response.data)) {
-            tasks = response.data;
-        } else if (response.tasks && Array.isArray(response.tasks)) {
-            tasks = response.tasks;
-        }
-        const sortedTasks = tasks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        setLatestTasks(sortedTasks.slice(0, 5));
-        const taskCounts = {};
-        tasks.forEach(task => {
-            const projectId = task.project?.id || task.project || task.project_id;
-            if (projectId) {
-                taskCounts[projectId] = (taskCounts[projectId] || 0) + 1;
+    const fetchTasks = async () => {
+        const token = localStorage.getItem("token");
+        try {
+            const response = await getTasks(token);
+            let tasks = [];
+            if (Array.isArray(response)) {
+                tasks = response;
+            } else if (response.data && Array.isArray(response.data)) {
+                tasks = response.data;
+            } else if (response.tasks && Array.isArray(response.tasks)) {
+                tasks = response.tasks;
             }
-        });
-        setProjectTaskCounts(taskCounts);
-        setTotalTasks(response.totalTasks || tasks.length);
-        setOngoingTasks(response.ongoingTasks ||
-            tasks.filter(task => task.status?.toLowerCase() === 'ongoing').length);
-        setCompletedTasks(response.completedTasks ||
-            tasks.filter(task => task.status?.toLowerCase() === 'completed').length);
-        setCancelledTasks(response.cancelledTasks ||
-            tasks.filter(task => task.status?.toLowerCase() === 'cancelled').length);
-        setOverdueTasks(response.overdueTasks ||
-            tasks.filter(task => {
-                if (!task.endDate) return false;
-                const endDate = new Date(task.endDate);
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const isOverdue = endDate < today;
-                const isNotCompleted = task.status?.toLowerCase() !== 'completed';
-                const isNotCancelled = task.status?.toLowerCase() !== 'cancelled';
-                return isOverdue && isNotCompleted && isNotCancelled;
-            }).length);
-        setTodoTasks(response.todoTasks ||
-            tasks.filter(task => task.status?.toLowerCase() === 'to do').length);
-        setLoadingProgress(100);
-        setLoading(false);
-    } catch (error) {
-        console.error("Error fetching tasks:", error.message);
-    }
-};
+            const sortedTasks = tasks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            setLatestTasks(sortedTasks.slice(0, 5));
+            const taskCounts = {};
+            tasks.forEach(task => {
+                const projectId = task.project?.id || task.project || task.project_id;
+                if (projectId) {
+                    taskCounts[projectId] = (taskCounts[projectId] || 0) + 1;
+                }
+            });
+            setProjectTaskCounts(taskCounts);
+            setTotalTasks(response.totalTasks || tasks.length);
+            setOngoingTasks(response.ongoingTasks ||
+                tasks.filter(task => task.status?.toLowerCase() === 'ongoing').length);
+            setCompletedTasks(response.completedTasks ||
+                tasks.filter(task => task.status?.toLowerCase() === 'completed').length);
+            setCancelledTasks(response.cancelledTasks ||
+                tasks.filter(task => task.status?.toLowerCase() === 'cancelled').length);
+            setOverdueTasks(response.overdueTasks ||
+                tasks.filter(task => {
+                    if (!task.endDate) return false;
+                    const endDate = new Date(task.endDate);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const isOverdue = endDate < today;
+                    const isNotCompleted = task.status?.toLowerCase() !== 'completed';
+                    const isNotCancelled = task.status?.toLowerCase() !== 'cancelled';
+                    return isOverdue && isNotCompleted && isNotCancelled;
+                }).length);
+            setTodoTasks(response.todoTasks ||
+                tasks.filter(task => task.status?.toLowerCase() === 'to do').length);
+            setLoadingProgress(100);
+            setLoading(false);
+        } catch (error) {
+            console.error("Error fetching tasks:", error.message);
+        }
+    };
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -140,87 +150,96 @@ const fetchTasks = async () => {
         return null;
     };
 
-    return (
-        <>
-            <div className="h-screen bg-[#EEEFEF] w-337">
-                <div className="fixed h-screen">
+    // Mobile view (< 768px)
+    if (windowWidth < 768) {
+        return (
+            <div className="bg-[#EEEFEF] min-h-screen w-full">
+                <div className="fixed bottom-0 left-0 right-0 z-10">
                     <Sidebar username={username} userProjects={projectList} />
                 </div>
-                <div className="ml-[200px] w-290 overflow-y-auto h-screen">
+                <div className="pb-16"> {/* Padding to account for fixed bottom navigation */}
                     <PageHeader />
-                    <div className="p-6 min-h-screen pl-20 ">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-200 ">
-                            <div className="bg-[#D8BEC6] p-6 rounded-2xl col-span-1 md:col-span-2 flex flex-col justify-between w-130 h-80">
-                                <h2 className="text-lg font-semibold text-black">Welcome To Quest</h2>
-                                <div className="text-[40px] font-bold text-black">Hello {username}</div>
-                                <img src="/uploads/ififif.png" alt="Welcome Illustration" className="w-60 h-60 mt-7 ml-50" />
+                    <div className="p-2">
+                        {/* Welcome Card */}
+                        <div className="bg-[#D8BEC6] p-4 rounded-2xl mb-4">
+                            <h2 className="text-lg font-semibold text-black">Welcome To Quest</h2>
+                            <div className="text-2xl font-bold text-black">Hello {username}</div>
+                            <div className="flex justify-center mt-2">
+                                <img src="/uploads/ififif.png" alt="Welcome Illustration" className="w-40 h-40" />
                             </div>
-                            <div className="bg-[#D8BEC6] p-4 rounded-2xl w-130 ">
-                                <div className="flex justify-between items-center">
-                                    <h3 className="text-lg font-bold text-black">Recent Project</h3>
-                                    <Link to="/projects">
-                                    <button className="bg-red-500 text-white px-4 py-2 rounded-lg">All Projects</button>
+                        </div>
+
+                        {/* Recent Projects */}
+                        <div className="bg-[#D8BEC6] p-4 rounded-2xl mb-4">
+                            <div className="flex justify-between items-center mb-2">
+                                <h3 className="text-md font-bold text-black">Recent Projects</h3>
+                                <Link to="/projects">
+                                    <button className="bg-red-500 text-white px-3 py-1 rounded-lg text-sm">All Projects</button>
                                 </Link>
-                                </div>
-                                <div className="mt-4 space-y-3">
-                                    {projectList.length > 0 ? projectList.map((project, index) => (
-                                <div key={index} className="bg-[#E0ADBD] p-2 rounded-lg flex items-center justify-between cursor-pointer" onClick={() => navigate(`/viewproject/${project._id}`)}>
-                                    <div className="flex items-center gap-2">
-                                        <ProjectImageOrLetter projectName={project.name} projectImage={project.projectImage} size={30} />
-                                        <div>
-                                            <p className="font-semibold text-black">{project.name}</p>
-                                            <p className="text-sm text-black">
-                                                {projectTaskCounts[project._id] || 0} {(projectTaskCounts[project._id] || 0) === 1 ? 'Task' : 'Tasks'}
-                                            </p>
+                            </div>
+                            <div className="space-y-2">
+                                {projectList.length > 0 ? projectList.map((project, index) => (
+                                    <div key={index} className="bg-[#E0ADBD] p-2 rounded-lg flex items-center justify-between"
+                                        onClick={() => navigate(`/viewproject/${project._id}`)}>
+                                        <div className="flex items-center gap-2">
+                                            <ProjectImageOrLetter projectName={project.name} projectImage={project.projectImage} size={24} />
+                                            <div>
+                                                <p className="font-semibold text-black text-sm">{project.name}</p>
+                                                <p className="text-xs text-black">
+                                                    {projectTaskCounts[project._id] || 0} {(projectTaskCounts[project._id] || 0) === 1 ? 'Task' : 'Tasks'}
+                                                </p>
+                                            </div>
                                         </div>
+                                        <span className="text-md text-black">→</span>
                                     </div>
-                                    <span className="text-lg text-black">→</span>
-                                </div>
-                                    )) : (
-                                        <div>
-                                            <p className="text-black">No projects available.</p>
-                                            <img src="/uploads/Artboard 1 copy 4.png" alt="Welcome Illustration" className="w-50 h-50 mt-4 ml-50" />
-                                        </div>
-                                    )}
-                                </div>
+                                )) : (
+                                    <div className="text-center">
+                                        <p className="text-black text-sm">No projects available.</p>
+                                        <img src="/uploads/Artboard 1 copy 4.png" alt="No projects" className="w-32 h-32 mx-auto mt-2" />
+                                    </div>
+                                )}
                             </div>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-7 gap-4 mt-6 w-264">
+
+                        {/* Stats Grid - 2 columns on mobile */}
+                        <div className="grid grid-cols-2 gap-3 mb-4">
                             {[
-                        { title: "Total Projects", count: totalProjects },
-                        { title: "Total Tasks", count: totalTasks },
-                        { title: "To Do", count: todoTasks },
-                        { title: "Ongoing", count: ongoingTasks },
-                        { title: "Completed", count: completedTasks },
-                        { title: "Cancelled", count: cancelledTasks },
-                        { title: "Overdue", count: overdueTasks },
-                    ].map((item, index) => (
-                        <div key={index} className="bg-[#D8BEC6] p-4 rounded-2xl text-left">
-                            <p className="text-sm text-black">{item.title}</p>
-                            <p className="text-2xl font-bold text-black">
-                                {item.count !== undefined ? item.count : "Loading..."}
-                            </p>
+                                { title: "Projects", count: totalProjects },
+                                { title: "Tasks", count: totalTasks },
+                                { title: "To Do", count: todoTasks },
+                                { title: "Ongoing", count: ongoingTasks },
+                                { title: "Completed", count: completedTasks },
+                                { title: "Cancelled", count: cancelledTasks },
+                                { title: "Overdue", count: overdueTasks },
+                            ].map((item, index) => (
+                                <div key={index} className="bg-[#D8BEC6] p-3 rounded-2xl">
+                                    <p className="text-xs text-black">{item.title}</p>
+                                    <p className="text-xl font-bold text-black">
+                                        {item.count !== undefined ? item.count : "..."}
+                                    </p>
+                                </div>
+                            ))}
                         </div>
-                    ))}
-                        </div>
-                        <div className="bg-[#D8BEC6] p-6 rounded-2xl mt-6 w-264">
-                            <div className="flex justify-between items-center">
-                                <h3 className="text-lg font-bold text-black">Recent Tasks</h3>
+
+                        {/* Recent Tasks */}
+                        <div className="bg-[#D8BEC6] p-4 rounded-2xl">
+                            <div className="flex justify-between items-center mb-2">
+                                <h3 className="text-md font-bold text-black">Recent Tasks</h3>
                                 <Link to="/mytasks">
-                                    <button className="bg-red-500 text-white px-4 py-2 rounded-lg">All Tasks</button>
+                                    <button className="bg-red-500 text-white px-3 py-1 rounded-lg text-sm">All Tasks</button>
                                 </Link>
                             </div>
-                            <div className="mt-4 space-y-3">
+                            <div className="space-y-2">
                                 {(latestTasks || []).length > 0 ? latestTasks.map((task, index) => {
                                     const projectId = getProjectId(task);
                                     const project = projectId ? projectsMap[projectId] : null;
                                     return (
                                         <div
                                             key={index}
-                                            className="bg-[#E0ADBD] p-3 rounded-lg flex items-center justify-between cursor-pointer"
+                                            className="bg-[#E0ADBD] p-2 rounded-lg flex items-center justify-between"
                                             onClick={() => setSelectedTask(task)}
                                         >
-                                            <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-2">
                                                 <div>
                                                     <p className="text-sm font-bold text-black">{task.name}</p>
                                                     {project && (
@@ -228,17 +247,279 @@ const fetchTasks = async () => {
                                                     )}
                                                 </div>
                                             </div>
-                                            <span className="text-lg text-black">→</span>
+                                            <span className="text-md text-black">→</span>
                                         </div>
                                     );
                                 }) : (
-                                    <p className="text-black">No tasks available.</p>
+                                    <p className="text-black text-sm">No tasks available.</p>
                                 )}
                             </div>
                         </div>
                     </div>
                 </div>
+
+                {selectedTask && (
+                    <TaskDetailsModal
+                        task={selectedTask}
+                        onClose={() => setSelectedTask(null)}
+                        onTaskUpdate={() => setSelectedTask(null)}
+                    />
+                )}
+
+                {loading && (
+                    <div className="fixed inset-0 bg-white bg-opacity-30 flex flex-col items-center justify-center z-50">
+                        <div className="w-48 h-3 bg-gray-300 rounded-full overflow-hidden mb-2">
+                            <div className="h-full bg-red-500 transition-all duration-300" style={{ width: `${loadingProgress}%` }}></div>
+                        </div>
+                        <p className="text-sm">Loading Dashboard</p>
+                        <div className="text-black text-md font-semibold">{loadingProgress}%</div>
+                    </div>
+                )}
             </div>
+        );
+    }
+
+    // Tablet portrait view (768px - 1024px)
+    if (windowWidth >= 768 && windowWidth < 1024) {
+        return (
+            <div className="h-screen bg-[#EEEFEF] flex">
+                <div className="fixed h-screen">
+                    <Sidebar username={username} userProjects={projectList} />
+                </div>
+                <div className="ml-16 w-full overflow-y-auto">
+                    <PageHeader />
+                    <div className="p-4 min-h-screen">
+                        {/* Top Row */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+                            {/* Welcome Card */}
+                            <div className="bg-[#D8BEC6] p-4 rounded-2xl col-span-2">
+                                <h2 className="text-lg font-semibold text-black">Welcome To Quest</h2>
+                                <div className="text-3xl font-bold text-black">Hello {username}</div>
+                                <div className="flex justify-end">
+                                    <img src="/uploads/ififif.png" alt="Welcome Illustration" className="w-48 h-48" />
+                                </div>
+                            </div>
+
+                            {/* Recent Projects */}
+                            <div className="bg-[#D8BEC6] p-4 rounded-2xl">
+                                <div className="flex justify-between items-center mb-2">
+                                    <h3 className="text-md font-bold text-black">Recent Projects</h3>
+                                    <Link to="/projects">
+                                        <button className="bg-red-500 text-white px-3 py-1 rounded-lg text-sm">All Projects</button>
+                                    </Link>
+                                </div>
+                                <div className="space-y-2">
+                                    {projectList.length > 0 ? projectList.map((project, index) => (
+                                        <div key={index} className="bg-[#E0ADBD] p-2 rounded-lg flex items-center justify-between"
+                                            onClick={() => navigate(`/viewproject/${project._id}`)}>
+                                            <div className="flex items-center gap-2">
+                                                <ProjectImageOrLetter projectName={project.name} projectImage={project.projectImage} size={24} />
+                                                <div>
+                                                    <p className="font-semibold text-black text-sm">{project.name}</p>
+                                                    <p className="text-xs text-black">
+                                                        {projectTaskCounts[project._id] || 0} {(projectTaskCounts[project._id] || 0) === 1 ? 'Task' : 'Tasks'}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <span className="text-md text-black">→</span>
+                                        </div>
+                                    )) : (
+                                        <div className="text-center">
+                                            <p className="text-black text-sm">No projects available.</p>
+                                            <img src="/uploads/Artboard 1 copy 4.png" alt="No projects" className="w-32 h-32 mx-auto mt-2" />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Stats Grid - 4 columns on tablet */}
+                        <div className="grid grid-cols-4 gap-3 mb-4">
+                            {[
+                                { title: "Projects", count: totalProjects },
+                                { title: "Tasks", count: totalTasks },
+                                { title: "To Do", count: todoTasks },
+                                { title: "Ongoing", count: ongoingTasks },
+                                { title: "Completed", count: completedTasks },
+                                { title: "Cancelled", count: cancelledTasks },
+                                { title: "Overdue", count: overdueTasks },
+                            ].map((item, index) => (
+                                <div key={index} className="bg-[#D8BEC6] p-3 rounded-2xl">
+                                    <p className="text-xs text-black">{item.title}</p>
+                                    <p className="text-xl font-bold text-black">
+                                        {item.count !== undefined ? item.count : "..."}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Recent Tasks */}
+                        <div className="bg-[#D8BEC6] p-4 rounded-2xl">
+                            <div className="flex justify-between items-center mb-2">
+                                <h3 className="text-md font-bold text-black">Recent Tasks</h3>
+                                <Link to="/mytasks">
+                                    <button className="bg-red-500 text-white px-3 py-1 rounded-lg text-sm">All Tasks</button>
+                                </Link>
+                            </div>
+                            <div className="space-y-2">
+                                {(latestTasks || []).length > 0 ? latestTasks.map((task, index) => {
+                                    const projectId = getProjectId(task);
+                                    const project = projectId ? projectsMap[projectId] : null;
+                                    return (
+                                        <div
+                                            key={index}
+                                            className="bg-[#E0ADBD] p-2 rounded-lg flex items-center justify-between"
+                                            onClick={() => setSelectedTask(task)}
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <div>
+                                                    <p className="text-sm font-bold text-black">{task.name}</p>
+                                                    {project && (
+                                                        <p className="text-xs text-gray-700">{project.name}</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <span className="text-md text-black">→</span>
+                                        </div>
+                                    );
+                                }) : (
+                                    <p className="text-black text-sm">No tasks available.</p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {selectedTask && (
+                    <TaskDetailsModal
+                        task={selectedTask}
+                        onClose={() => setSelectedTask(null)}
+                        onTaskUpdate={() => setSelectedTask(null)}
+                    />
+                )}
+
+                {loading && (
+                    <div className="fixed inset-0 bg-white bg-opacity-30 flex flex-col items-center justify-center z-50">
+                        <div className="w-64 h-3 bg-gray-300 rounded-full overflow-hidden mb-2">
+                            <div className="h-full bg-red-500 transition-all duration-300" style={{ width: `${loadingProgress}%` }}></div>
+                        </div>
+                        <p className="text-sm">Loading Dashboard</p>
+                        <div className="text-black text-md font-semibold">{loadingProgress}%</div>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    // Laptop/Desktop view (≥ 1024px)
+    return (
+        <div className="h-screen  flex">
+            <div className="fixed h-screen">
+                <Sidebar username={username} userProjects={projectList} />
+            </div>
+            {/* Main Content Area */}
+            <div className="overflow-y-auto bg-[#EEEFEF]" style={{ width: 'calc(100% - 16rem)', marginLeft: '16rem' }}>
+                <PageHeader />
+                <div className="p-6 min-h-screen">
+                    {/* Top Row */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {/* Welcome Card */}
+                        <div className="bg-[#D8BEC6] p-6 rounded-2xl col-span-2 flex flex-col justify-between h-80">
+                            <h2 className="text-lg font-semibold text-black">Welcome To Quest</h2>
+                            <div className="text-[40px] font-bold text-black">Hello {username}</div>
+                            <img src="/uploads/ififif.png" alt="Welcome Illustration" className="w-60 h-60 self-end" />
+                        </div>
+
+                        {/* Recent Projects */}
+                        <div className="bg-[#D8BEC6] p-4 rounded-2xl">
+                            <div className="flex justify-between items-center">
+                                <h3 className="text-lg font-bold text-black">Recent Projects</h3>
+                                <Link to="/projects">
+                                    <button className="bg-red-500 text-white px-4 py-2 rounded-lg">All Projects</button>
+                                </Link>
+                            </div>
+                            <div className="mt-4 space-y-3">
+                                {projectList.length > 0 ? projectList.map((project, index) => (
+                                    <div key={index} className="bg-[#E0ADBD] p-2 rounded-lg flex items-center justify-between cursor-pointer"
+                                        onClick={() => navigate(`/viewproject/${project._id}`)}>
+                                        <div className="flex items-center gap-2">
+                                            <ProjectImageOrLetter projectName={project.name} projectImage={project.projectImage} size={30} />
+                                            <div>
+                                                <p className="font-semibold text-black">{project.name}</p>
+                                                <p className="text-sm text-black">
+                                                    {projectTaskCounts[project._id] || 0} {(projectTaskCounts[project._id] || 0) === 1 ? 'Task' : 'Tasks'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <span className="text-lg text-black">→</span>
+                                    </div>
+                                )) : (
+                                    <div>
+                                        <p className="text-black">No projects available.</p>
+                                        <img src="/uploads/Artboard 1 copy 4.png" alt="No projects" className="w-40 h-40 mx-auto mt-2" />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Stats Grid - 7 columns on desktop */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mt-6">
+                        {[
+                            { title: "Total Projects", count: totalProjects },
+                            { title: "Total Tasks", count: totalTasks },
+                            { title: "To Do", count: todoTasks },
+                            { title: "Ongoing", count: ongoingTasks },
+                            { title: "Completed", count: completedTasks },
+                            { title: "Cancelled", count: cancelledTasks },
+                            { title: "Overdue", count: overdueTasks },
+                        ].map((item, index) => (
+                            <div key={index} className="bg-[#D8BEC6] p-4 rounded-2xl text-left">
+                                <p className="text-sm text-black">{item.title}</p>
+                                <p className="text-2xl font-bold text-black">
+                                    {item.count !== undefined ? item.count : "Loading..."}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Recent Tasks */}
+                    <div className="bg-[#D8BEC6] p-6 rounded-2xl mt-6">
+                        <div className="flex justify-between items-center">
+                            <h3 className="text-lg font-bold text-black">Recent Tasks</h3>
+                            <Link to="/mytasks">
+                                <button className="bg-red-500 text-white px-4 py-2 rounded-lg">All Tasks</button>
+                            </Link>
+                        </div>
+                        <div className="mt-4 space-y-3">
+                            {(latestTasks || []).length > 0 ? latestTasks.map((task, index) => {
+                                const projectId = getProjectId(task);
+                                const project = projectId ? projectsMap[projectId] : null;
+                                return (
+                                    <div
+                                        key={index}
+                                        className="bg-[#E0ADBD] p-3 rounded-lg flex items-center justify-between cursor-pointer"
+                                        onClick={() => setSelectedTask(task)}
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div>
+                                                <p className="text-sm font-bold text-black">{task.name}</p>
+                                                {project && (
+                                                    <p className="text-xs text-gray-700">{project.name}</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <span className="text-lg text-black">→</span>
+                                    </div>
+                                );
+                            }) : (
+                                <p className="text-black">No tasks available.</p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {selectedTask && (
                 <TaskDetailsModal
                     task={selectedTask}
@@ -246,16 +527,17 @@ const fetchTasks = async () => {
                     onTaskUpdate={() => setSelectedTask(null)}
                 />
             )}
-{loading && (
-    <div className="fixed inset-0 bg-white bg-opacity-30 flex flex-col items-center justify-center z-50">
-        <div className="w-64 h-4 bg-gray-300 rounded-full overflow-hidden mb-4">
-            <div className="h-full bg-red-500 transition-all duration-300" style={{ width: `${loadingProgress}%` }}></div>
+
+            {loading && (
+                <div className="fixed inset-0 bg-white bg-opacity-30 flex flex-col items-center justify-center z-50">
+                    <div className="w-64 h-4 bg-gray-300 rounded-full overflow-hidden mb-4">
+                        <div className="h-full bg-red-500 transition-all duration-300" style={{ width: `${loadingProgress}%` }}></div>
+                    </div>
+                    <p>Loading Dashboard</p>
+                    <div className="text-black text-lg font-semibold">{loadingProgress}%</div>
+                </div>
+            )}
         </div>
-        <p>Loading Dashboard</p>
-        <div className="text-black text-lg font-semibold">{loadingProgress}%</div>
-    </div>
-)}
-        </>
     );
 };
 

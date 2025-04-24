@@ -170,7 +170,7 @@ const Register = () => {
                 <input
                   type={showConfirmPassword ? "text" : "password"}
                   name="confirmPassword"
-                  placeholder="Enter your Password Again"
+                  placeholder="Re-Enter your Password"
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   style={{ 

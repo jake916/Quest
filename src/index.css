@@ -79,3 +79,43 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* Override body flex centering on mobile to allow full screen content */
+@media (max-width: 767px) {
+  body {
+    display: block;
+    place-items: unset;
+    justify-content: unset;
+  }
+}
+
+/* Override body flex centering on tablet portrait to allow full screen content */
+@media (min-width: 768px) and (max-width: 1024px) {
+  body {
+    display: block;
+    place-items: unset;
+    justify-content: unset;
+  }
+}
+
+/* Reduce left margin on main content for smaller desktop/laptop screens */
+@media (max-width: 1366px) {
+  .ml-64 {
+    margin-left: 8rem !important;
+  }
+}
+
+/* Adjust left margin on tablet view if needed */
+@media (max-width: 1024px) {
+  .ml-16 {
+    margin-left: 4rem !important;
+  }
+}
+
+@media (min-width: 1025px) {
+  body {
+    display: block;
+    place-items: unset;
+    justify-content: unset;
+  }
+}
