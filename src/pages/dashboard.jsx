@@ -153,7 +153,7 @@ const Dashboard = () => {
     // Mobile view (< 768px)
     if (windowWidth < 768) {
         return (
-            <div className="bg-[#EEEFEF] min-h-screen w-full">
+            <div className="bg-[#EEEFEF] min-h-screen w-full overflow-y-auto h-screen">
                 <div className="fixed bottom-0 left-0 right-0 z-10">
                     <Sidebar username={username} userProjects={projectList} />
                 </div>
