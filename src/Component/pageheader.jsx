@@ -4,7 +4,7 @@ import { FiSearch } from "react-icons/fi";
 import { FaPlus } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
-const PageHeader = ({ projectId, searchQuery, onSearchChange }) => {
+const PageHeader = ({ projectId, searchQuery, onSearchChange, hideSearch }) => {
   const location = useLocation();
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   let headerContent;
@@ -38,9 +38,19 @@ const PageHeader = ({ projectId, searchQuery, onSearchChange }) => {
       case location.pathname === '/createtask':
         headerContent = <p className="text-lg font-bold text-[#72001D] p-4 text-left">Create Task</p>;
         break;
-      case location.pathname === '/projects':
-        headerContent = <p className="text-lg font-bold text-[#72001D] p-4 text-left">My Projects</p>;
-        break;
+case location.pathname === '/projects':
+  headerContent = (
+    <div className="flex justify-between items-center p-4">
+      <p className="text-lg font-bold text-[#72001D]">My Projects</p>
+      <Link to="/createproject">
+        <button className="bg-[#72001D] text-white px-3 py-1 rounded-lg flex items-center text-sm">
+          <FaPlus className="mr-1" />
+          Create Project
+        </button>
+      </Link>
+    </div>
+  );
+  break;
       case location.pathname === '/createproject':
         headerContent = <p className="text-lg font-bold text-[#72001D] p-4 text-left">Create Project</p>;
         break;
@@ -87,24 +97,26 @@ const PageHeader = ({ projectId, searchQuery, onSearchChange }) => {
         headerContent = (
           <div className="flex justify-between items-center p-4 border-b">
             <p className="text-xl font-bold text-[#72001D]">My Tasks</p>
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChange={onSearchChange}
-                  className="border border-gray-300 rounded-md px-2 py-1 text-black w-40 pl-6"
-                />
-                <FiSearch className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            {!hideSearch && (
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search..."
+                    value={searchQuery}
+                    onChange={onSearchChange}
+                    className="border border-gray-300 rounded-md px-2 py-1 text-black w-40 pl-6"
+                  />
+                  <FiSearch className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                </div>
+                <Link to="/createtask">
+                  <button className="bg-[#72001D] text-white px-3 py-1 rounded-lg flex items-center">
+                    <FaPlus className="mr-1" />
+                    <span>Task</span>
+                  </button>
+                </Link>
               </div>
-              <Link to="/createtask">
-                <button className="bg-[#72001D] text-white px-3 py-1 rounded-lg flex items-center">
-                  <FaPlus className="mr-1" />
-                  <span>Task</span>
-                </button>
-              </Link>
-            </div>
+            )}
           </div>
         );
         break;
@@ -112,24 +124,26 @@ const PageHeader = ({ projectId, searchQuery, onSearchChange }) => {
         headerContent = (
           <div className="flex justify-between items-center p-4 border-b">
             <p className="text-xl font-bold text-[#72001D]">My Projects</p>
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChange={onSearchChange}
-                  className="border border-gray-300 rounded-md px-2 py-1 text-black w-40 pl-6"
-                />
-                <FiSearch className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            {!hideSearch && (
+              <div className="flex items-center gap-2">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search..."
+                    value={searchQuery}
+                    onChange={onSearchChange}
+                    className="border border-gray-300 rounded-md px-2 py-1 text-black w-40 pl-6"
+                  />
+                  <FiSearch className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                </div>
+                <Link to="/createproject">
+                  <button className="bg-[#72001D] text-white px-3 py-1 rounded-lg flex items-center">
+                    <FaPlus className="mr-1" />
+                    <span>Project</span>
+                  </button>
+                </Link>
               </div>
-              <Link to="/createproject">
-                <button className="bg-[#72001D] text-white px-3 py-1 rounded-lg flex items-center">
-                  <FaPlus className="mr-1" />
-                  <span>Project</span>
-                </button>
-              </Link>
-            </div>
+            )}
           </div>
         );
         break;
