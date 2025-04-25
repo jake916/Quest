@@ -206,7 +206,7 @@ const ViewProject = () => {
   // Mobile view (< 768px)
   if (windowWidth < 768) {
     return (
-      <div className="bg-[#EEEFEF] min-h-screen">
+      <div className="bg-[#EEEFEF] min-h-screen overflow-y-auto h-screen">
         {/* Mobile bottom navigation */}
         <div className="fixed bottom-0 left-0 right-0 z-10">
           <Sidebar username={username} />
