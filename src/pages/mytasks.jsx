@@ -373,12 +373,12 @@ const MyTasks = () => {
                     </div>
                 </div>
 
-            {selectedTask && (
-                <TaskDetailsModal
-                    task={selectedTask}
-                    onClose={() => setSelectedTask(null)}
-                />
-            )}
+                {selectedTask && (
+                    <TaskDetailsModal
+                        task={selectedTask}
+                        onClose={() => setSelectedTask(null)}
+                    />
+                )}
 
                 {loading && (
                     <div className="fixed inset-0 bg-white bg-opacity-30 flex flex-col items-center justify-center z-50">
@@ -563,150 +563,148 @@ const MyTasks = () => {
 
     // Desktop view (≥ 1024px)
     return (
-        <div className="h-screen flex">
-            <div className="fixed h-screen w-64">
+        <div className="h-screen bg-[#EEEFEF] flex">
+            <div className="fixed h-screen">
                 <Sidebar username={username} />
             </div>
 
             <div className="overflow-y-auto bg-[#EEEFEF]" style={{ width: 'calc(100% - 16rem)', marginLeft: '16rem' }}>
                 <PageHeader searchQuery={searchQuery} onSearchChange={(e) => setSearchQuery(e.target.value)} />
 
-                <div className="p-6 min-h-screen">
-                    <div className="flex justify-end gap-4 mt-5">
-                        <div className="relative" ref={filtersRef}>
-                            <button
-                                className="px-4 py-2 bg-white text-[#800020] rounded"
-                                onClick={() => setFiltersOpen(!filtersOpen)}
-                            >
-                                Filters
-                            </button>
+                <div className="flex justify-end gap-4 mt-5">
+                    <div className="relative" ref={filtersRef}>
+                        <button
+                            className="px-4 py-2 bg-white text-[#800020] rounded"
+                            onClick={() => setFiltersOpen(!filtersOpen)}
+                        >
+                            Filters
+                        </button>
 
-                            {filtersOpen && (
-                                <div className="absolute mt-2 bg-white border border-gray-300 rounded shadow-lg p-4 w-64 z-10">
-                                    <div>
-                                        <button
-                                            className="w-full text-left px-3 py-2 border-b border-gray-200"
-                                            onClick={() => {
-                                                setStatusDropdownOpen(!statusDropdownOpen);
-                                                setPriorityDropdownOpen(false);
-                                            }}
-                                        >
-                                            Filter by Status: <span className="font-semibold">{filter}</span>
-                                        </button>
-                                        {statusDropdownOpen && (
-                                            <ul className="border border-gray-200 rounded mt-1 max-h-40 overflow-auto">
-                                                {['All', 'To Do', 'Ongoing', 'Cancelled', 'Completed', 'Overdue'].map((status) => (
-                                                    <li
-                                                        key={status}
-                                                        className={`px-3 py-2 cursor-pointer hover:bg-gray-100 ${
-                                                            filter === status ? 'bg-gray-200 font-semibold' : ''
-                                                        }`}
-                                                        onClick={() => {
-                                                            setFilter(status);
-                                                            setStatusDropdownOpen(false);
-                                                            setFiltersOpen(false);
-                                                        }}
-                                                    >
-                                                        {status}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        )}
-                                    </div>
-
-                                    <div className="mt-4">
-                                        <button
-                                            className="w-full text-left px-3 py-2 border-b border-gray-200"
-                                            onClick={() => {
-                                                setPriorityDropdownOpen(!priorityDropdownOpen);
-                                                setStatusDropdownOpen(false);
-                                            }}
-                                        >
-                                            Filter by Priority: <span className="font-semibold">{priorityFilter}</span>
-                                        </button>
-                                        {priorityDropdownOpen && (
-                                            <ul className="border border-gray-200 rounded mt-1 max-h-40 overflow-auto">
-                                                {['All', 'High', 'Medium', 'Low'].map((priority) => (
-                                                    <li
-                                                        key={priority}
-                                                        className={`px-3 py-2 cursor-pointer hover:bg-gray-100 ${
-                                                            priorityFilter === priority ? 'bg-gray-200 font-semibold' : ''
-                                                        }`}
-                                                        onClick={() => {
-                                                            setPriorityFilter(priority);
-                                                            setPriorityDropdownOpen(false);
-                                                            setFiltersOpen(false);
-                                                        }}
-                                                    >
-                                                        {priority}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        )}
-                                    </div>
+                        {filtersOpen && (
+                            <div className="absolute mt-2 bg-white border border-gray-300 rounded shadow-lg p-4 w-64 z-10">
+                                <div>
+                                    <button
+                                        className="w-full text-left px-3 py-2 border-b border-gray-200"
+                                        onClick={() => {
+                                            setStatusDropdownOpen(!statusDropdownOpen);
+                                            setPriorityDropdownOpen(false);
+                                        }}
+                                    >
+                                        Filter by Status: <span className="font-semibold">{filter}</span>
+                                    </button>
+                                    {statusDropdownOpen && (
+                                        <ul className="border border-gray-200 rounded mt-1 max-h-40 overflow-auto">
+                                            {['All', 'To Do', 'Ongoing', 'Cancelled', 'Completed', 'Overdue'].map((status) => (
+                                                <li
+                                                    key={status}
+                                                    className={`px-3 py-2 cursor-pointer hover:bg-gray-100 ${
+                                                        filter === status ? 'bg-gray-200 font-semibold' : ''
+                                                    }`}
+                                                    onClick={() => {
+                                                        setFilter(status);
+                                                        setStatusDropdownOpen(false);
+                                                        setFiltersOpen(false);
+                                                    }}
+                                                >
+                                                    {status}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
                                 </div>
-                            )}
-                        </div>
 
-                        <div className="relative" ref={sortRef}>
-                            <button
-                                className="px-4 py-2 bg-white text-[#800020] rounded"
-                                onClick={() => setSortOpen(!sortOpen)}
-                            >
-                                Sort: {sortOption}
-                            </button>
-                            {sortOpen && (
-                                <ul className="absolute mt-2 bg-white border border-gray-300 rounded shadow-lg p-2 w-48 z-10">
-                                    {["None", "Alphabetically", "By Priority"].map((option) => (
-                                        <li
-                                            key={option}
-                                            className={`px-3 py-2 cursor-pointer hover:bg-gray-100 ${
-                                                sortOption === option ? "bg-gray-200 font-semibold" : ""
-                                            }`}
-                                            onClick={() => {
-                                                setSortOption(option);
-                                                setSortOpen(false);
-                                            }}
-                                        >
-                                            {option}
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-4 mt-5">
-                        {loading ? (
-                            <div className="col-span-3 text-center py-10">
-                                <p className="text-lg text-gray-500">Loading tasks...</p>
-                            </div>
-                        ) : error ? (
-                            <div className="col-span-3 text-center py-10">
-                                <p className="text-lg text-red-500">{error}</p>
-                                <button 
-                                    onClick={() => window.location.reload()}
-                                    className="mt-2 px-4 py-2 bg-[#6c0017] text-white rounded"
-                                >
-                                    Retry
-                                </button>
-                            </div>
-                        ) : sortedTasks.length > 0 ? (
-                            sortedTasks.map((task) => (
-                                <TaskCard
-                                    key={task._id}
-                                    task={task}
-                                    onClick={() => setSelectedTask(task)}
-                                    token={token}
-                                    onTaskDeleted={handleTaskDeleted}
-                                />
-                            ))
-                        ) : (
-                            <div className="col-span-3 text-center py-10">
-                                <p className="text-lg text-gray-500">No tasks found for this filter</p>
+                                <div className="mt-4">
+                                    <button
+                                        className="w-full text-left px-3 py-2 border-b border-gray-200"
+                                        onClick={() => {
+                                            setPriorityDropdownOpen(!priorityDropdownOpen);
+                                            setStatusDropdownOpen(false);
+                                        }}
+                                    >
+                                        Filter by Priority: <span className="font-semibold">{priorityFilter}</span>
+                                    </button>
+                                    {priorityDropdownOpen && (
+                                        <ul className="border border-gray-200 rounded mt-1 max-h-40 overflow-auto">
+                                            {['All', 'High', 'Medium', 'Low'].map((priority) => (
+                                                <li
+                                                    key={priority}
+                                                    className={`px-3 py-2 cursor-pointer hover:bg-gray-100 ${
+                                                        priorityFilter === priority ? 'bg-gray-200 font-semibold' : ''
+                                                    }`}
+                                                    onClick={() => {
+                                                        setPriorityFilter(priority);
+                                                        setPriorityDropdownOpen(false);
+                                                        setFiltersOpen(false);
+                                                    }}
+                                                >
+                                                    {priority}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
                             </div>
                         )}
                     </div>
+
+                    <div className="relative" ref={sortRef}>
+                        <button
+                            className="px-4 py-2 bg-white text-[#800020] rounded"
+                            onClick={() => setSortOpen(!sortOpen)}
+                        >
+                            Sort: {sortOption}
+                        </button>
+                        {sortOpen && (
+                            <ul className="absolute mt-2 bg-white border border-gray-300 rounded shadow-lg p-2 w-48 z-10">
+                                {["None", "Alphabetically", "By Priority"].map((option) => (
+                                    <li
+                                        key={option}
+                                        className={`px-3 py-2 cursor-pointer hover:bg-gray-100 ${
+                                            sortOption === option ? "bg-gray-200 font-semibold" : ""
+                                        }`}
+                                        onClick={() => {
+                                            setSortOption(option);
+                                            setSortOpen(false);
+                                        }}
+                                    >
+                                        {option}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4 mt-5">
+                    {loading ? (
+                        <div className="col-span-3 text-center py-10">
+                            <p className="text-lg text-gray-500">Loading tasks...</p>
+                        </div>
+                    ) : error ? (
+                        <div className="col-span-3 text-center py-10">
+                            <p className="text-lg text-red-500">{error}</p>
+                            <button 
+                                onClick={() => window.location.reload()}
+                                className="mt-2 px-4 py-2 bg-[#6c0017] text-white rounded"
+                            >
+                                Retry
+                            </button>
+                        </div>
+                    ) : sortedTasks.length > 0 ? (
+                        sortedTasks.map((task) => (
+                            <TaskCard
+                                key={task._id}
+                                task={task}
+                                onClick={() => setSelectedTask(task)}
+                                token={token}
+                                onTaskDeleted={handleTaskDeleted}
+                            />
+                        ))
+                    ) : (
+                        <div className="col-span-3 text-center py-10">
+                            <p className="text-lg text-gray-500">No tasks found for this filter</p>
+                        </div>
+                    )}
                 </div>
             </div>
 

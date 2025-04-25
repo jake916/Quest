@@ -74,7 +74,17 @@ case location.pathname === '/projects':
         headerContent = <p className="text-lg font-bold text-[#72001D] p-4 text-left">Edit Project</p>;
         break;
       case isViewProject:
-        headerContent = <p className="text-lg font-bold text-[#72001D] p-4 text-left">Project Details</p>;
+        headerContent = (
+          <div className="flex justify-between items-center p-4">
+            <p className="text-lg font-bold text-[#72001D]">Project Details</p>
+            <Link to="/createproject">
+              <button className="bg-[#72001D] text-white px-3 py-1 rounded-lg flex items-center text-sm">
+                <FaPlus className="mr-1" />
+                Create Project
+              </button>
+            </Link>
+          </div>
+        );
         break;
       default:
         headerContent = <p className="text-lg font-bold text-[#72001D] p-4 text-left">Welcome</p>;
