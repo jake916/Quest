@@ -46,10 +46,26 @@ const NotificationManager = () => {
               const reminderTime = new Date(dueDate.getTime() - hoursBefore * 60 * 60 * 1000);
               const timeDiff = now.getTime() - reminderTime.getTime();
               if (timeDiff >= 0 && timeDiff < 5 * 60 * 1000 && !shownCustomNotifications.includes(reminderId)) {
-                new Notification('Task Reminder', {
-                  body: `Task "${task.name}" is due in ${hoursBefore} hour(s).`,
-                  icon: '/favicon.ico'
-                });
+                if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                  navigator.serviceWorker.getRegistration().then(registration => {
+                    if (registration) {
+                      registration.showNotification('Task Reminder', {
+                        body: `Task "${task.name}" is due in ${hoursBefore} hour(s).`,
+                        icon: '/favicon.ico'
+                      });
+                    } else {
+                      new Notification('Task Reminder', {
+                        body: `Task "${task.name}" is due in ${hoursBefore} hour(s).`,
+                        icon: '/favicon.ico'
+                      });
+                    }
+                  });
+                } else {
+                  new Notification('Task Reminder', {
+                    body: `Task "${task.name}" is due in ${hoursBefore} hour(s).`,
+                    icon: '/favicon.ico'
+                  });
+                }
                 shownCustomNotifications.push(reminderId);
                 localStorage.setItem('shownCustomNotifications', JSON.stringify(shownCustomNotifications));
                 storedNotifications.push({ id: reminderId, message: `Task "${task.name}" is due in ${hoursBefore} hour(s).`, timestamp: Date.now(), type: "task" });
@@ -67,10 +83,26 @@ const NotificationManager = () => {
             const diffDays = diffTime / (1000 * 60 * 60 * 24);
             if (diffDays === 1) {
               if (!shownDefaultNotifications.includes(task._id)) {
-                new Notification('Task Reminder', {
-                  body: `Task "${task.name}" is due tomorrow.`,
-                  icon: '/favicon.ico'
-                });
+                if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                  navigator.serviceWorker.getRegistration().then(registration => {
+                    if (registration) {
+                      registration.showNotification('Task Reminder', {
+                        body: `Task "${task.name}" is due tomorrow.`,
+                        icon: '/favicon.ico'
+                      });
+                    } else {
+                      new Notification('Task Reminder', {
+                        body: `Task "${task.name}" is due tomorrow.`,
+                        icon: '/favicon.ico'
+                      });
+                    }
+                  });
+                } else {
+                  new Notification('Task Reminder', {
+                    body: `Task "${task.name}" is due tomorrow.`,
+                    icon: '/favicon.ico'
+                  });
+                }
                 shownDefaultNotifications.push(task._id);
                 localStorage.setItem('shownDefaultNotifications', JSON.stringify(shownDefaultNotifications));
                 storedNotifications.push({ id: task._id, message: `Task "${task.name}" is due tomorrow.`, timestamp: Date.now(), type: "task" });
@@ -86,10 +118,26 @@ const NotificationManager = () => {
           const isNotCancelled = task.status?.toLowerCase() !== 'cancelled';
           if (isOverdue && isNotCompleted && isNotCancelled) {
             if (!shownOverdueNotifications.includes(task._id)) {
-              new Notification('Task Overdue', {
-                body: `Task "${task.name}" is overdue.`,
-                icon: '/favicon.ico'
-              });
+              if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.getRegistration().then(registration => {
+                  if (registration) {
+                    registration.showNotification('Task Overdue', {
+                      body: `Task "${task.name}" is overdue.`,
+                      icon: '/favicon.ico'
+                    });
+                  } else {
+                    new Notification('Task Overdue', {
+                      body: `Task "${task.name}" is overdue.`,
+                      icon: '/favicon.ico'
+                    });
+                  }
+                });
+              } else {
+                new Notification('Task Overdue', {
+                  body: `Task "${task.name}" is overdue.`,
+                  icon: '/favicon.ico'
+                });
+              }
               shownOverdueNotifications.push(task._id);
               localStorage.setItem('shownOverdueNotifications', JSON.stringify(shownOverdueNotifications));
               storedNotifications.push({ id: `${task._id}_overdue`, message: `Task "${task.name}" is overdue.`, timestamp: Date.now(), type: "task" });
