@@ -110,10 +110,29 @@ const CreateProject = () => {
         // Show browser notification and add to storedNotifications
         if (Notification.permission === 'granted') {
           const message = `Your ${projectName} project has been created, you can now assign task to this project. Lets work together to crush your Goals💪💪....click here to view project`;
-          new Notification('Project Created', {
-            body: message,
-            icon: '/favicon.ico'
-          });
+
+          if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+            navigator.serviceWorker.getRegistration().then(registration => {
+              if (registration) {
+                registration.showNotification('Project Created', {
+                  body: message,
+                  icon: '/favicon.ico'
+                });
+              } else {
+                // fallback to Notification constructor if no registration
+                new Notification('Project Created', {
+                  body: message,
+                  icon: '/favicon.ico'
+                });
+              }
+            });
+          } else {
+            // fallback to Notification constructor if no service worker support
+            new Notification('Project Created', {
+              body: message,
+              icon: '/favicon.ico'
+            });
+          }
 
           // Add notification to storedNotifications with unique id and timestamp
           const storedNotifications = JSON.parse(localStorage.getItem('storedNotifications') || '[]');

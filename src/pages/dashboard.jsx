@@ -225,22 +225,35 @@ const Dashboard = () => {
 
                         {/* Stats Grid - 2 columns on mobile */}
                         <div className="grid grid-cols-2 gap-3 mb-4">
-                            {[
-                                { title: "Projects", count: totalProjects },
-                                { title: "Tasks", count: totalTasks },
-                                { title: "To Do", count: todoTasks },
-                                { title: "Ongoing", count: ongoingTasks },
-                                { title: "Completed", count: completedTasks },
-                                { title: "Cancelled", count: cancelledTasks },
-                                { title: "Overdue", count: overdueTasks },
-                            ].map((item, index) => (
-                                <div key={index} className="bg-[#D8BEC6] p-3 rounded-2xl">
+                        {[
+                            { title: "Projects", count: totalProjects },
+                            { title: "Tasks", count: totalTasks },
+                            { title: "To Do", count: todoTasks },
+                            { title: "Ongoing", count: ongoingTasks },
+                            { title: "Completed", count: completedTasks },
+                            { title: "Cancelled", count: cancelledTasks },
+                            { title: "Overdue", count: overdueTasks },
+                        ].map((item, index) => {
+                            const filterableStatuses = ["to do", "ongoing", "completed", "cancelled", "overdue"];
+                            const filter = item.title.toLowerCase();
+                            const isClickable = filterableStatuses.includes(filter);
+                            return (
+                                <div
+                                    key={index}
+                                    className={`bg-[#D8BEC6] p-3 rounded-2xl ${isClickable ? "cursor-pointer hover:bg-[#c9aeb7]" : ""}`}
+                                    onClick={() => {
+                                        if (isClickable) {
+                                            navigate(`/mytasks?filter=${filter}`);
+                                        }
+                                    }}
+                                >
                                     <p className="text-xs text-black">{item.title}</p>
                                     <p className="text-xl font-bold text-black">
                                         {item.count !== undefined ? item.count : "..."}
                                     </p>
                                 </div>
-                            ))}
+                            );
+                        })}
                         </div>
 
                         {/* Recent Tasks */}

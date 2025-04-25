@@ -106,10 +106,29 @@ const CreateTask = () => {
           if (Notification.permission === 'granted') {
             const projectName = projectList.find(p => p._id === taskData.project)?.name || 'Unknown Project';
             const message = `Great news! Your '${taskData.name}' is now set up in the '${projectName}' project. Assign some subtasks and let's work together to get this done! 🔥`;
-            new Notification('Task Created', {
-              body: message,
-              icon: '/favicon.ico'
-            });
+
+            if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+              navigator.serviceWorker.getRegistration().then(registration => {
+                if (registration) {
+                  registration.showNotification('Task Created', {
+                    body: message,
+                    icon: '/favicon.ico'
+                  });
+                } else {
+                  // fallback to Notification constructor if no registration
+                  new Notification('Task Created', {
+                    body: message,
+                    icon: '/favicon.ico'
+                  });
+                }
+              });
+            } else {
+              // fallback to Notification constructor if no service worker support
+              new Notification('Task Created', {
+                body: message,
+                icon: '/favicon.ico'
+              });
+            }
 
             // Add notification to storedNotifications with unique id and timestamp
             const storedNotifications = JSON.parse(localStorage.getItem('storedNotifications') || '[]');
