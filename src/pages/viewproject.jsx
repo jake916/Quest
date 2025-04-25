@@ -577,7 +577,7 @@ const ViewProject = () => {
         <Sidebar username={username} />
       </div>
 
-      <div className="ml-64 w-full overflow-y-auto p-6">
+      <div className="overflow-y-auto bg-[#EEEFEF]" style={{ width: 'calc(100% - 16rem)', marginLeft: '16rem' }}>
         <PageHeader projectId={project?._id} searchQuery={searchQuery} onSearchChange={(e) => setSearchQuery(e.target.value)} />
         
         <div className="mt-6 pl-12">

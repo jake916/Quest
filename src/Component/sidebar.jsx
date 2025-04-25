@@ -193,7 +193,7 @@ const Sidebar = ({ username, userProjects }) => {
   // Desktop/Laptop view (≥ 1024px)
   return (
     <>
-      <div className="bg-[#72001D] text-white flex flex-col h-screen fixed left-0 top-0 z-10 w-64 overflow-hidden">
+      <div className="bg-[#72001D] text-white flex flex-col h-screen fixed left-0 top-0 z-50 w-64 overflow-hidden">
         {/* Profile Section */}
         <div className="p-4">
           <div className="flex items-center space-x-3">

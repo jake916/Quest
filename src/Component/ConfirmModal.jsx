@@ -1,8 +1,9 @@
 import React from "react";
+import ReactDOM from "react-dom";
 
 const ConfirmModal = ({ message, onConfirm, onCancel }) => {
-  return (
-    <div className="fixed inset-0 bg-black-500 bg-opacity-50 flex items-center justify-center z-50">
+  return ReactDOM.createPortal(
+    <div className="fixed inset-0  bg-opacity-50 flex items-center justify-center z-[9999]">
       <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-lg">
         <p className="mb-4 text-gray-800">{message}</p>
         <div className="flex justify-end space-x-4">
@@ -20,7 +21,8 @@ const ConfirmModal = ({ message, onConfirm, onCancel }) => {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
