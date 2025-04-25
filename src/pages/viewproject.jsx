@@ -25,6 +25,23 @@ const ViewProject = () => {
   const [sortOption, setSortOption] = useState("None");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTask, setSelectedTask] = useState(null);
+
+  // Update recently accessed tasks in localStorage when selectedTask changes
+  useEffect(() => {
+    if (selectedTask && selectedTask._id) {
+      const recentlyAccessedRaw = localStorage.getItem('recentlyAccessedTasks');
+      let recentlyAccessed = {};
+      if (recentlyAccessedRaw) {
+        try {
+          recentlyAccessed = JSON.parse(recentlyAccessedRaw);
+        } catch (e) {
+          recentlyAccessed = {};
+        }
+      }
+      recentlyAccessed[selectedTask._id] = Date.now();
+      localStorage.setItem('recentlyAccessedTasks', JSON.stringify(recentlyAccessed));
+    }
+  }, [selectedTask]);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 

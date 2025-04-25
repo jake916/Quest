@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Task = require("../Models/task");
 const User = require("../Models/User");
 const Project = require("../Models/project");
@@ -89,10 +90,11 @@ const createTask = async (req, res) => {
             priority: req.body.priority,
             startDate: req.body.startDate,
             endDate: req.body.endDate,
-            user: {
-                id: user._id,
-                name: user.name || user.username || 'Unknown' // Fallback for name
-            }
+        user: {
+            id: user._id,
+            name: user.name || user.username || 'Unknown' // Fallback for name
+        },
+        customReminders: req.body.customReminders || []
         });
 
         await newTask.save();
@@ -157,9 +159,13 @@ const updateTask = async (req, res) => {
 const getTask = async (req, res) => {
     try {
         const { id } = req.params;
-        
+
         if (!req.user?.id) {
             return res.status(401).json({ message: "Unauthorized" });
+        }
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid task ID" });
         }
 
         const task = await Task.findOne({

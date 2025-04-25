@@ -25,8 +25,8 @@ const TaskSchema = new mongoose.Schema(
         title: String,
         completed: { type: Boolean, default: false }
       }
-    ]
-
+    ],
+    customReminders: [{ type: Number }], // Array of hours before due date for reminders
   },
   { timestamps: true } // Adds createdAt and updatedAt fields automatically
 );

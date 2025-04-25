@@ -42,7 +42,7 @@ router.post("/register", async (req, res) => {
             return res.status(400).json({ message: "Passwords do not match" });
         }
 
-        if (username.length < 6) {
+        if (username.length < 1) {
             return res.status(400).json({ message: "Username must be at least 6 characters long" });
         }
 
@@ -83,17 +83,26 @@ router.post("/register", async (req, res) => {
 // Login User
 router.post("/login", async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { identifier, password } = req.body;
 
         if (!process.env.JWT_SECRET) {
             console.error("JWT_SECRET is missing in environment variables.");
             return res.status(500).json({ message: "Internal Server Error" });
         }
 
-        const user = await User.findOne({ email: email ? email.toLowerCase() : "" });
+        if (!identifier || !password) {
+            return res.status(400).json({ message: "Identifier and password are required" });
+        }
 
-        if (!user || !email) {
-            return res.status(400).json({ message: "User not found or email is required" });
+        const user = await User.findOne({ 
+            $or: [
+                { email: identifier.toLowerCase() }, 
+                { username: identifier }
+            ] 
+        });
+
+        if (!user) {
+            return res.status(400).json({ message: "User not found" });
         }
 
         const isMatch = await bcrypt.compare(password, user.password);

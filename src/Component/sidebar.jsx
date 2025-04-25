@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { FiHome, FiCheckSquare, FiFolder, FiSettings } from "react-icons/fi";
+import { FiHome, FiCheckSquare, FiFolder, FiSettings, FiBell } from "react-icons/fi";
 import { FaArrowCircleRight, FaBars } from "react-icons/fa";
 import { getProjects } from "../api/projectService";
 import ProjectImageOrLetter from "./ProjectImageOrLetter";
@@ -13,6 +13,7 @@ const Sidebar = ({ username, userProjects }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [newNotificationCount, setNewNotificationCount] = useState(0);
 
   // Handle window resize
   useEffect(() => {
@@ -23,6 +24,22 @@ const Sidebar = ({ username, userProjects }) => {
     window.addEventListener('resize', handleResize);
     return () => {
       window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
+  // Load new notification count from localStorage
+  useEffect(() => {
+    const updateNotificationCount = () => {
+      const count = parseInt(localStorage.getItem('newNotificationCount') || '0');
+      setNewNotificationCount(count);
+    };
+
+    updateNotificationCount();
+
+    // Optionally, listen to storage events to update count in real-time
+    window.addEventListener('storage', updateNotificationCount);
+    return () => {
+      window.removeEventListener('storage', updateNotificationCount);
     };
   }, []);
 
@@ -66,11 +83,6 @@ const Sidebar = ({ username, userProjects }) => {
   if (windowWidth < 768) {
     return (
       <>
-        {/* Mobile Top Profile Section */}
-        {/* <div className="fixed top-0 left-0 z-10 p-2 bg-[#72001D]">
-          <ProjectImageOrLetter projectName={username} size={40} />
-        </div> */}
-
         {/* Mobile Bottom Navigation */}
         <div className="fixed bottom-0 left-0 right-0 bg-white flex justify-around items-center h-16 z-10 border-t border-gray-200">
           <Link to="/dashboard" className={`flex flex-col items-center ${location.pathname === '/dashboard' ? 'text-[#72001D]' : 'text-gray-600'}`}>
@@ -86,6 +98,16 @@ const Sidebar = ({ username, userProjects }) => {
           <Link to="/mytasks" className={`flex flex-col items-center ${['/mytasks', '/createtask', '/edittask'].includes(location.pathname) ? 'text-[#72001D]' : 'text-gray-600'}`}>
             <FiCheckSquare className="text-lg" />
             <span className="text-xs">Tasks</span>
+          </Link>
+
+          <Link to="/notifications" className={`relative flex flex-col items-center ${location.pathname === '/notifications' ? 'text-[#72001D]' : 'text-gray-600'}`}>
+            <FiBell className="text-lg" />
+            {newNotificationCount > 0 && (
+              <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full transform translate-x-1/2 -translate-y-1/2">
+                {newNotificationCount}
+              </span>
+            )}
+            <span className="text-xs">Notifications</span>
           </Link>
 
           <Link to="/settings" className={`flex flex-col items-center ${location.pathname === '/settings' ? 'text-[#72001D]' : 'text-gray-600'}`}>
@@ -105,7 +127,7 @@ const Sidebar = ({ username, userProjects }) => {
     );
   }
 
-  // Tablet view (vertical) (768px - 1024px)
+  // Tablet view (768px - 1024px)
   if (windowWidth >= 768 && windowWidth < 1024) {
     return (
       <>
@@ -224,6 +246,18 @@ const Sidebar = ({ username, userProjects }) => {
                   <FiCheckSquare className="text-lg" />
                   <span className="text-sm">My Tasks</span>
                 </li>
+              </Link>
+
+              <Link to="/notifications" className="relative">
+                <li className={`flex items-center space-x-2 ${location.pathname === '/notifications' ? 'bg-white text-black' : 'text-white'} px-3 py-2 rounded-lg cursor-pointer`}>
+                  <FiBell className="text-lg" />
+                  <span className="text-sm">Notifications</span>
+                </li>
+                {newNotificationCount > 0 && (
+                  <span className="absolute top-2 right-4 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+                    {newNotificationCount}
+                  </span>
+                )}
               </Link>
 
               <Link to="/settings">

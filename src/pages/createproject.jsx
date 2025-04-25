@@ -99,12 +99,39 @@ const CreateProject = () => {
       clearInterval(progressInterval);
       
       if (response && response.success) {
+        // Show toast success
         toast.success(response.message || "Project created successfully!", {
           autoClose: 3000,
           onClose: () => {
             navigate("/projects");
           }
         });
+
+        // Show browser notification and add to storedNotifications
+        if (Notification.permission === 'granted') {
+          const message = `Your ${projectName} project has been created, you can now assign task to this project. Lets work together to crush your Goals💪💪....click here to view project`;
+          new Notification('Project Created', {
+            body: message,
+            icon: '/favicon.ico'
+          });
+
+          // Add notification to storedNotifications with unique id and timestamp
+          const storedNotifications = JSON.parse(localStorage.getItem('storedNotifications') || '[]');
+          const newNotification = {
+            id: `project_created_${Date.now()}`,
+            type: "project",
+            message,
+            timestamp: Date.now(),
+            projectId: response.project?._id || response.projectId || null
+          };
+          storedNotifications.push(newNotification);
+          localStorage.setItem('storedNotifications', JSON.stringify(storedNotifications));
+
+          // Increment newNotificationCount in localStorage
+          let newNotificationCount = parseInt(localStorage.getItem('newNotificationCount') || '0');
+          newNotificationCount++;
+          localStorage.setItem('newNotificationCount', newNotificationCount.toString());
+        }
       } else {
         toast.error(response?.message || "Failed to create project");
       }

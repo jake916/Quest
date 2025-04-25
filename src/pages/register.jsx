@@ -35,8 +35,8 @@ const Register = () => {
       return toast.error("Passwords do not match");
     }
 
-    if (formData.username.length < 6) {
-      return toast.error("Username must be at least 2 characters");
+    if (formData.username.length < 1) {
+      return toast.error("Username must be at least 6 ");
     }
 
     if (formData.password.length < 8) {
@@ -103,6 +103,7 @@ const Register = () => {
                 type="text"
                 name="username"
                 placeholder="Enter your Username"
+                autoComplete="off"
                 value={formData.username}
                 onChange={handleChange}
                 style={{ 
@@ -122,6 +123,7 @@ const Register = () => {
                 type="email"
                 name="email"
                 placeholder="hello@quest.com"
+                autoComplete="email"
                 value={formData.email}
                 onChange={handleChange}
                 style={{ 

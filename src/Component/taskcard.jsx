@@ -48,11 +48,13 @@ const TaskCard = ({ task, onClick, onTaskDeleted, token }) => {
     };
 
     const totalSubtasks = task.subtasks ? task.subtasks.length : 0;
+    const completedSubtasks = task.subtasks ? task.subtasks.filter(st => st.completed).length : 0;
+    const completionPercent = totalSubtasks === 0 ? 0 : Math.round((completedSubtasks / totalSubtasks) * 100);
 
     return (
         <>
             <div
-                className="relative bg-[#EAD7E3] p-4 rounded-lg shadow-lg cursor-pointer hover:bg-[#E0C9D9] transition-colors"
+                className="relative bg-[#fffff] p-4 rounded-lg shadow-lg cursor-pointer hover:bg-[#E0C9D9] transition-colors"
                 onClick={onClick}
             >
                 <button
@@ -82,7 +84,15 @@ const TaskCard = ({ task, onClick, onTaskDeleted, token }) => {
                 </div>
                 <h3 className="text-lg font-bold">{task.name}</h3>
                 <p className="text-sm text-gray-600">{task.description.length > 100 ? task.description.substring(0, 100) + '...' : task.description}</p>
-                <p className="text-sm text-gray-700 mt-1">Subtasks: {totalSubtasks}</p>
+
+                {/* Progress Bar */}
+                <div className="w-full bg-gray-300 rounded-full h-3 mt-2">
+                    <div
+                        className="bg-[#800020] h-3 rounded-full transition-all duration-500"
+                        style={{ width: `${completionPercent}%` }}
+                    ></div>
+                </div>
+                <p className="text-sm text-gray-700 mt-1">Subtasks: {totalSubtasks} | Completed: {completedSubtasks}</p>
 
                 <p className="text-right text-xs text-gray-500"> Due Date: {task.endDate}</p>
 

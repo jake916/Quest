@@ -109,7 +109,18 @@ const Projects = () => {
           <PageHeader searchQuery={searchQuery} onSearchChange={handleSearchChange} hideSearch={true} />
           
           <div className="p-4">
-            {filteredProjects.length === 0 ? (
+          {filteredProjects.length === 0 ? (
+            <>
+              <div className="p-4">
+                <input
+                  type="text"
+                  placeholder="Search projects..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  className="border border-gray-300 rounded-md px-2 py-1 text-black w-full mb-4"
+                  autoFocus
+                />
+              </div>
               <div className="text-center">
                 <p className="mt-4 font-bold text-lg">No projects yet</p>
                 <p className="mb-4">Create a project to get started</p>
@@ -119,32 +130,33 @@ const Projects = () => {
                   className="w-48 h-48 mx-auto"
                 />
               </div>
-            ) : (
-              <>
-                <div className="flex items-center justify-between">
-                  <p className="mt-4 font-bold text-lg">All Projects</p>
-                  <button
-                    onClick={() => setShowSearchInput(!showSearchInput)}
-                    className="p-2 rounded bg-gray-300 text-black"
-                    aria-label="Toggle Search"
-                  >
-                    <FiSearch size={20} />
-                  </button>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center justify-between">
+                <p className="mt-4 font-bold text-lg">All Projects</p>
+                <button
+                  onClick={() => setShowSearchInput(!showSearchInput)}
+                  className="p-2 rounded bg-gray-300 text-black"
+                  aria-label="Toggle Search"
+                >
+                  <FiSearch size={20} />
+                </button>
+              </div>
+              {showSearchInput && (
+                <div className="mt-2">
+                  <input
+                    type="text"
+                    placeholder="Search projects..."
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    className="border border-gray-300 rounded-md px-2 py-1 text-black w-full"
+                    autoFocus
+                  />
                 </div>
-                {showSearchInput && (
-                  <div className="mt-2">
-                    <input
-                      type="text"
-                      placeholder="Search projects..."
-                      value={searchQuery}
-                      onChange={handleSearchChange}
-                      className="border border-gray-300 rounded-md px-2 py-1 text-black w-full"
-                      autoFocus
-                    />
-                  </div>
-                )}
-              </>
-            )}
+              )}
+            </>
+          )}
 
 <div className="grid grid-cols-1 gap-4 mt-4">
   {filteredProjects.map((project, index) => (
@@ -233,7 +245,7 @@ const Projects = () => {
         <Sidebar username={username} userProjects={projectList} />
       </div>
 
-<div className="overflow-y-auto bg-[#EEEFEF]" style={{ width: 'calc(100% - 16rem)', marginLeft: '13rem' }}>
+<div className="overflow-y-auto bg-[#EEEFEF]" style={{ width: 'calc(100% - 16rem)', marginLeft: '16rem' }}>
         <PageHeader searchQuery={searchQuery} onSearchChange={handleSearchChange} />
         
         <div className="p-6 pl-20">

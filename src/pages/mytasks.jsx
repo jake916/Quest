@@ -3,10 +3,13 @@ import Sidebar from "../Component/sidebar";
 import PageHeader from "../Component/pageheader";
 import TaskCard from "../Component/taskcard";
 import TaskDetailsModal from "../Component/taskdetails";
-import { jwtDecode } from "jwt-decode";
 import { getTasks, updateTask } from "../api/taskService";
+import { useLocation } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
+
 
 const MyTasks = () => {
+    const location = useLocation();
     const [filter, setFilter] = useState("All");
     const [priorityFilter, setPriorityFilter] = useState("All");
     const [sortOption, setSortOption] = useState("None");
@@ -14,6 +17,23 @@ const MyTasks = () => {
     const [tasks, setTasks] = useState([]);
     const [username, setUsername] = useState("Guest");
     const [selectedTask, setSelectedTask] = useState(null);
+
+    // Update recently accessed tasks in localStorage when selectedTask changes
+    useEffect(() => {
+        if (selectedTask && selectedTask._id) {
+            const recentlyAccessedRaw = localStorage.getItem('recentlyAccessedTasks');
+            let recentlyAccessed = {};
+            if (recentlyAccessedRaw) {
+                try {
+                    recentlyAccessed = JSON.parse(recentlyAccessedRaw);
+                } catch (e) {
+                    recentlyAccessed = {};
+                }
+            }
+            recentlyAccessed[selectedTask._id] = Date.now();
+            localStorage.setItem('recentlyAccessedTasks', JSON.stringify(recentlyAccessed));
+        }
+    }, [selectedTask]);
     const [loading, setLoading] = useState(true);
     const [loadingProgress, setLoadingProgress] = useState(0);
     const [error, setError] = useState(null);
@@ -115,9 +135,21 @@ const MyTasks = () => {
             } catch (error) {
                 console.error("Invalid token:", error);
                 setUsername("Guest");
+                setToken(null);
             }
         }
     }, []);
+
+    useEffect(() => {
+        // Check for filter query param on mount
+        const params = new URLSearchParams(location.search);
+        const filterParam = params.get("filter");
+        if (filterParam) {
+            // Capitalize first letter and lowercase rest to match filter options
+            const formattedFilter = filterParam.charAt(0).toUpperCase() + filterParam.slice(1).toLowerCase();
+            setFilter(formattedFilter);
+        }
+    }, [location.search]);
 
     useEffect(() => {
         fetchTasks();
@@ -132,6 +164,7 @@ const MyTasks = () => {
             window.removeEventListener('taskUpdated', handleTaskUpdated);
         };
     }, [token]);
+    
     
     useEffect(() => {
         let interval = null;
@@ -153,7 +186,8 @@ const MyTasks = () => {
         return () => {
             if (interval) clearInterval(interval);
         };
-    }, [loading, loadingProgress]);
+    }, [loading]);
+
 
     const normalizeStatus = (status) => {
         const mapping = {

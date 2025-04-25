@@ -51,8 +51,30 @@ const Dashboard = () => {
             } else if (response.tasks && Array.isArray(response.tasks)) {
                 tasks = response.tasks;
             }
-            const sortedTasks = tasks.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            // Read recently accessed tasks map from localStorage
+            const recentlyAccessedRaw = localStorage.getItem('recentlyAccessedTasks');
+            let recentlyAccessed = {};
+            if (recentlyAccessedRaw) {
+                try {
+                    recentlyAccessed = JSON.parse(recentlyAccessedRaw);
+                } catch (e) {
+                    recentlyAccessed = {};
+                }
+            }
+
+            // Sort tasks by last accessed time, fallback to createdAt
+            const sortedTasks = tasks.sort((a, b) => {
+                const aAccess = recentlyAccessed[a._id] || 0;
+                const bAccess = recentlyAccessed[b._id] || 0;
+                if (aAccess === bAccess) {
+                    return new Date(b.createdAt) - new Date(a.createdAt);
+                }
+                return bAccess - aAccess;
+            });
+
             setLatestTasks(sortedTasks.slice(0, 5));
+
             const taskCounts = {};
             tasks.forEach(task => {
                 const projectId = task.project?.id || task.project || task.project_id;
@@ -234,21 +256,34 @@ const Dashboard = () => {
                                     const projectId = getProjectId(task);
                                     const project = projectId ? projectsMap[projectId] : null;
                                     return (
-                                        <div
-                                            key={index}
-                                            className="bg-[#E0ADBD] p-2 rounded-lg flex items-center justify-between"
-                                            onClick={() => setSelectedTask(task)}
-                                        >
-                                            <div className="flex items-center gap-2">
-                                                <div>
-                                                    <p className="text-sm font-bold text-black">{task.name}</p>
-                                                    {project && (
-                                                        <p className="text-xs text-gray-700">{project.name}</p>
-                                                    )}
-                                                </div>
+                                    <div
+                                        key={index}
+                                        className="bg-[#E0ADBD] p-2 rounded-lg flex items-center justify-between"
+                                        onClick={() => {
+                                            const recentlyAccessedRaw = localStorage.getItem('recentlyAccessedTasks');
+                                            let recentlyAccessed = {};
+                                            if (recentlyAccessedRaw) {
+                                                try {
+                                                    recentlyAccessed = JSON.parse(recentlyAccessedRaw);
+                                                } catch (e) {
+                                                    recentlyAccessed = {};
+                                                }
+                                            }
+                                            recentlyAccessed[task._id] = Date.now();
+                                            localStorage.setItem('recentlyAccessedTasks', JSON.stringify(recentlyAccessed));
+                                            setSelectedTask(task);
+                                        }}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <div>
+                                                <p className="text-sm font-bold text-black">{task.name}</p>
+                                                {project && (
+                                                    <p className="text-xs text-gray-700">{project.name}</p>
+                                                )}
                                             </div>
-                                            <span className="text-md text-black">→</span>
                                         </div>
+                                        <span className="text-md text-black">→</span>
+                                    </div>
                                     );
                                 }) : (
                                     <p className="text-black text-sm">No tasks available.</p>
@@ -465,22 +500,33 @@ const Dashboard = () => {
 
                     {/* Stats Grid - 7 columns on desktop */}
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mt-6">
-                        {[
-                            { title: "Total Projects", count: totalProjects },
-                            { title: "Total Tasks", count: totalTasks },
-                            { title: "To Do", count: todoTasks },
-                            { title: "Ongoing", count: ongoingTasks },
-                            { title: "Completed", count: completedTasks },
-                            { title: "Cancelled", count: cancelledTasks },
-                            { title: "Overdue", count: overdueTasks },
-                        ].map((item, index) => (
-                            <div key={index} className="bg-[#D8BEC6] p-4 rounded-2xl text-left">
-                                <p className="text-sm text-black">{item.title}</p>
-                                <p className="text-2xl font-bold text-black">
-                                    {item.count !== undefined ? item.count : "Loading..."}
-                                </p>
-                            </div>
-                        ))}
+                    {[
+                        { title: "Total Projects", count: totalProjects },
+                        { title: "Total Tasks", count: totalTasks },
+                        { title: "To Do", count: todoTasks },
+                        { title: "Ongoing", count: ongoingTasks },
+                        { title: "Completed", count: completedTasks },
+                        { title: "Cancelled", count: cancelledTasks },
+                        { title: "Overdue", count: overdueTasks },
+                    ].map((item, index) => (
+                        <div
+                            key={index}
+                            className="bg-[#D8BEC6] p-4 rounded-2xl text-left cursor-pointer hover:bg-[#c9aeb7]"
+                            onClick={() => {
+                                // Only navigate with filter for task statuses, not total projects/tasks
+                                const filterableStatuses = ["to do", "ongoing", "completed", "cancelled", "overdue"];
+                                const filter = item.title.toLowerCase();
+                                if (filterableStatuses.includes(filter)) {
+                                    navigate(`/mytasks?filter=${filter}`);
+                                }
+                            }}
+                        >
+                            <p className="text-sm text-black">{item.title}</p>
+                            <p className="text-2xl font-bold text-black">
+                                {item.count !== undefined ? item.count : "Loading..."}
+                            </p>
+                        </div>
+                    ))}
                     </div>
 
                     {/* Recent Tasks */}
@@ -499,7 +545,20 @@ const Dashboard = () => {
                                     <div
                                         key={index}
                                         className="bg-[#E0ADBD] p-3 rounded-lg flex items-center justify-between cursor-pointer"
-                                        onClick={() => setSelectedTask(task)}
+                                        onClick={() => {
+                                            const recentlyAccessedRaw = localStorage.getItem('recentlyAccessedTasks');
+                                            let recentlyAccessed = {};
+                                            if (recentlyAccessedRaw) {
+                                                try {
+                                                    recentlyAccessed = JSON.parse(recentlyAccessedRaw);
+                                                } catch (e) {
+                                                    recentlyAccessed = {};
+                                                }
+                                            }
+                                            recentlyAccessed[task._id] = Date.now();
+                                            localStorage.setItem('recentlyAccessedTasks', JSON.stringify(recentlyAccessed));
+                                            setSelectedTask(task);
+                                        }}
                                     >
                                         <div className="flex items-center gap-3">
                                             <div>

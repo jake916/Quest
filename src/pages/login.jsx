@@ -6,7 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -18,15 +18,15 @@ const Login = () => {
     setError("");
     setIsLoading(true);
 
-    // Validation for email and password
-    if (!email || !password) {
-      setError("Email and password are required.");
+    // Validation for identifier and password
+    if (!identifier || !password) {
+      setError("Username or Email and password are required.");
       setIsLoading(false);
       return;
     }
   
     try {
-      const token = await loginUser({ email, password }); // loginUser returns the token directly
+      const token = await loginUser({ identifier, password }); // loginUser returns the token directly
   
       if (!token) {
         throw new Error("Login failed. No token received.");
@@ -71,21 +71,21 @@ const Login = () => {
 
         <form style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }} onSubmit={handleLogin}>
           <div>
-            <label style={{ display: 'block', color: '#374151', marginBottom: '0.25rem', fontWeight: '500' }}>Email</label>
-            <input
-              type="email"
-              placeholder="Enter your Email"
-              style={{ 
-                width: '100%', 
-                padding: '0.5rem 1rem', 
-                border: '1px solid #D1D5DB', 
-                borderRadius: '0.5rem', 
-                backgroundColor: 'white', 
-                color: 'black'
-              }}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+          <label style={{ display: 'block', color: '#374151', marginBottom: '0.25rem', fontWeight: '500' }}>Username or Email</label>
+          <input
+            type="text"
+            placeholder="Enter your Username or Email"
+            style={{ 
+              width: '100%', 
+              padding: '0.5rem 1rem', 
+              border: '1px solid #D1D5DB', 
+              borderRadius: '0.5rem', 
+              backgroundColor: 'white', 
+              color: 'black'
+            }}
+            value={identifier}
+            onChange={(e) => setIdentifier(e.target.value)}
+          />
           </div>
           
           <div style={{ position: 'relative' }}>
