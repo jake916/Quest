@@ -1,19 +1,41 @@
 import React, { useEffect, useState } from 'react';
 import { getTasks } from '../api/taskService';
 
+const isIOS = () => {
+  if (typeof navigator === 'undefined') return false;
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+};
+
 const NotificationManager = () => {
-  const [permission, setPermission] = useState(Notification.permission);
+  const [permission, setPermission] = useState(
+    typeof Notification !== 'undefined' ? Notification.permission : 'denied'
+  );
 
   useEffect(() => {
+    if (typeof Notification === 'undefined') {
+      console.warn('Notification API not supported in this browser.');
+      return;
+    }
+
+    if (isIOS()) {
+      console.warn('Notifications are disabled on iOS devices due to limited support.');
+      return;
+    }
+
     if (Notification.permission === 'default') {
-      Notification.requestPermission().then(permission => {
-        setPermission(permission);
-      });
+      Notification.requestPermission()
+        .then(permission => {
+          setPermission(permission);
+        })
+        .catch(error => {
+          console.error('Notification permission request failed:', error);
+        });
     }
   }, []);
 
   useEffect(() => {
     if (permission !== 'granted') return;
+    if (isIOS()) return;
 
     const checkDueTasks = async () => {
       try {
@@ -46,25 +68,29 @@ const NotificationManager = () => {
               const reminderTime = new Date(dueDate.getTime() - hoursBefore * 60 * 60 * 1000);
               const timeDiff = now.getTime() - reminderTime.getTime();
               if (timeDiff >= 0 && timeDiff < 5 * 60 * 1000 && !shownCustomNotifications.includes(reminderId)) {
-                if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                  navigator.serviceWorker.getRegistration().then(registration => {
-                    if (registration) {
-                      registration.showNotification('Task Reminder', {
-                        body: `Task "${task.name}" is due in ${hoursBefore} hour(s).`,
-                        icon: '/favicon.ico'
-                      });
-                    } else {
-                      new Notification('Task Reminder', {
-                        body: `Task "${task.name}" is due in ${hoursBefore} hour(s).`,
-                        icon: '/favicon.ico'
-                      });
-                    }
-                  });
-                } else {
-                  new Notification('Task Reminder', {
-                    body: `Task "${task.name}" is due in ${hoursBefore} hour(s).`,
-                    icon: '/favicon.ico'
-                  });
+                try {
+                  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                    navigator.serviceWorker.getRegistration().then(registration => {
+                      if (registration) {
+                        registration.showNotification('Task Reminder', {
+                          body: `Task "${task.name}" is due in ${hoursBefore} hour(s).`,
+                          icon: '/favicon.ico'
+                        });
+                      } else {
+                        new Notification('Task Reminder', {
+                          body: `Task "${task.name}" is due in ${hoursBefore} hour(s).`,
+                          icon: '/favicon.ico'
+                        });
+                      }
+                    });
+                  } else {
+                    new Notification('Task Reminder', {
+                      body: `Task "${task.name}" is due in ${hoursBefore} hour(s).`,
+                      icon: '/favicon.ico'
+                    });
+                  }
+                } catch (error) {
+                  console.error('Notification error:', error);
                 }
                 shownCustomNotifications.push(reminderId);
                 localStorage.setItem('shownCustomNotifications', JSON.stringify(shownCustomNotifications));
@@ -83,25 +109,29 @@ const NotificationManager = () => {
             const diffDays = diffTime / (1000 * 60 * 60 * 24);
             if (diffDays === 1) {
               if (!shownDefaultNotifications.includes(task._id)) {
-                if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                  navigator.serviceWorker.getRegistration().then(registration => {
-                    if (registration) {
-                      registration.showNotification('Task Reminder', {
-                        body: `Task "${task.name}" is due tomorrow.`,
-                        icon: '/favicon.ico'
-                      });
-                    } else {
-                      new Notification('Task Reminder', {
-                        body: `Task "${task.name}" is due tomorrow.`,
-                        icon: '/favicon.ico'
-                      });
-                    }
-                  });
-                } else {
-                  new Notification('Task Reminder', {
-                    body: `Task "${task.name}" is due tomorrow.`,
-                    icon: '/favicon.ico'
-                  });
+                try {
+                  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                    navigator.serviceWorker.getRegistration().then(registration => {
+                      if (registration) {
+                        registration.showNotification('Task Reminder', {
+                          body: `Task "${task.name}" is due tomorrow.`,
+                          icon: '/favicon.ico'
+                        });
+                      } else {
+                        new Notification('Task Reminder', {
+                          body: `Task "${task.name}" is due tomorrow.`,
+                          icon: '/favicon.ico'
+                        });
+                      }
+                    });
+                  } else {
+                    new Notification('Task Reminder', {
+                      body: `Task "${task.name}" is due tomorrow.`,
+                      icon: '/favicon.ico'
+                    });
+                  }
+                } catch (error) {
+                  console.error('Notification error:', error);
                 }
                 shownDefaultNotifications.push(task._id);
                 localStorage.setItem('shownDefaultNotifications', JSON.stringify(shownDefaultNotifications));
@@ -118,25 +148,29 @@ const NotificationManager = () => {
           const isNotCancelled = task.status?.toLowerCase() !== 'cancelled';
           if (isOverdue && isNotCompleted && isNotCancelled) {
             if (!shownOverdueNotifications.includes(task._id)) {
-              if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-                navigator.serviceWorker.getRegistration().then(registration => {
-                  if (registration) {
-                    registration.showNotification('Task Overdue', {
-                      body: `Task "${task.name}" is overdue.`,
-                      icon: '/favicon.ico'
-                    });
-                  } else {
-                    new Notification('Task Overdue', {
-                      body: `Task "${task.name}" is overdue.`,
-                      icon: '/favicon.ico'
-                    });
-                  }
-                });
-              } else {
-                new Notification('Task Overdue', {
-                  body: `Task "${task.name}" is overdue.`,
-                  icon: '/favicon.ico'
-                });
+              try {
+                if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                  navigator.serviceWorker.getRegistration().then(registration => {
+                    if (registration) {
+                      registration.showNotification('Task Overdue', {
+                        body: `Task "${task.name}" is overdue.`,
+                        icon: '/favicon.ico'
+                      });
+                    } else {
+                      new Notification('Task Overdue', {
+                        body: `Task "${task.name}" is overdue.`,
+                        icon: '/favicon.ico'
+                      });
+                    }
+                  });
+                } else {
+                  new Notification('Task Overdue', {
+                    body: `Task "${task.name}" is overdue.`,
+                    icon: '/favicon.ico'
+                  });
+                }
+              } catch (error) {
+                console.error('Notification error:', error);
               }
               shownOverdueNotifications.push(task._id);
               localStorage.setItem('shownOverdueNotifications', JSON.stringify(shownOverdueNotifications));

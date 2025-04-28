@@ -15,7 +15,7 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  overflow: hidden;
+  /* overflow: hidden; */
 }
 .hide-scrollbar::-webkit-scrollbar {
   display: none; /* Hide scrollbar for Chrome, Safari, and Edge */
