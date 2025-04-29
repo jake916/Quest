@@ -34,7 +34,7 @@ const AppWrapper = () => {
        location.pathname !== '/mytasks' && 
        location.pathname !== '/projects' && 
        location.pathname !== '/messages' && 
-       location.pathname !== '/notification' &&
+       location.pathname !== '/notifications' &&
        location.pathname !== '/settings' && 
        location.pathname !== '/viewproject' && 
        !location.pathname.startsWith('/edittask') && 
@@ -57,7 +57,7 @@ const AppWrapper = () => {
         <Route path="/projects" element={<PrivateRoute><Projects /></PrivateRoute>} />
         <Route path="/messages" element={<PrivateRoute><Messages /></PrivateRoute>} />
         <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
-        <Route path="/notification" element={<PrivateRoute><Notification /></PrivateRoute>} />
+        <Route path="/notifications" element={<PrivateRoute><Notification /></PrivateRoute>} />
         <Route path="/createtask" element={<PrivateRoute><Createtask /></PrivateRoute>} />
         <Route path="/edittask/:taskId" element={<PrivateRoute><Edittask /></PrivateRoute>} />
         <Route path="/editproject/:projectId" element={<PrivateRoute><Editproject /></PrivateRoute>} />

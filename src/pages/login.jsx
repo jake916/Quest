@@ -38,7 +38,6 @@ const Login = () => {
       setTimeout(() => navigate("/dashboard"), 2000);
 
     } catch (err) {
-      console.error("Login Error:", err.message);
       toast.error(err.message || "An error occurred during login. Please try again."); 
       setError(err.message || "Server error, please try again.");
     } finally {
