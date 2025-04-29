@@ -185,8 +185,8 @@ const PageHeader = ({ projectId, searchQuery, onSearchChange, hideSearch, title 
         break;
       case location.pathname === '/notifications':
         headerContent = (
-          <div className="flex justify-between items-center  p-4 border-b">
-            <p className="text-xl font-bold text-[#72001D]">Notifications</p>
+          <div className="flex justify-between items-center   p-4 border-b">
+            <p className="text-md font-bold text-[#72001D]">Notifications</p>
           </div>
         );
         break;

@@ -17,10 +17,8 @@ const Notification = () => {
         <Sidebar />
       </div>
 
-      <div className="pb-16 px-4 pt-4 overflow-y-auto flex-1">
+      <div className="ml-75 w-full overflow-y-auto p-6">
         <PageHeader title="Notifications" />
-        <h1 className="text-xl font-bold mb-4">Notifications</h1>
-
         {notifications.length === 0 ? (
           <p className="text-gray-500">No notifications to display.</p>
         ) : (
