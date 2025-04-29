@@ -6,9 +6,9 @@ const Notification = () => {
   const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
-    // Fetch notifications from backend or localStorage if implemented
-    // For now, placeholder empty array
-    setNotifications([]);
+    // Fetch notifications from localStorage
+    const storedNotifications = JSON.parse(localStorage.getItem('storedNotifications') || '[]');
+    setNotifications(storedNotifications);
   }, []);
 
   return (
@@ -27,7 +27,7 @@ const Notification = () => {
           <ul className="space-y-3">
             {notifications.map((notif, index) => (
               <li key={index} className="p-4 border rounded shadow-sm bg-white hover:bg-gray-50 cursor-pointer">
-                <span>{notif.message}</span>
+                <span>{notif.message || notif.body || notif.title}</span>
               </li>
             ))}
           </ul>

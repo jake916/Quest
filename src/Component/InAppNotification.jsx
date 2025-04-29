@@ -5,7 +5,36 @@ const InAppNotification = () => {
 
   useEffect(() => {
     const handleNewNotification = (event) => {
-      setNotifications((prev) => [...prev, event.detail]);
+      const newNotification = event.detail;
+
+      // Save notification to localStorage
+      const storedNotifications = JSON.parse(localStorage.getItem('storedNotifications') || '[]');
+
+      // Avoid duplicates by checking notification id or title+body+timestamp
+      const isDuplicate = storedNotifications.some(notif => 
+        notif.id === newNotification.id ||
+        (notif.title === newNotification.title && notif.body === newNotification.body && notif.timestamp === newNotification.timestamp)
+      );
+
+      if (!isDuplicate) {
+        const updatedNotifications = [...storedNotifications, {
+          id: newNotification.id || `${newNotification.title}-${Date.now()}`,
+          title: newNotification.title,
+          message: newNotification.body,
+          timestamp: newNotification.timestamp || Date.now(),
+          type: "onesignal"
+        }];
+
+        // Optionally limit stored notifications to last 100
+        if (updatedNotifications.length > 100) {
+          updatedNotifications.shift();
+        }
+
+        localStorage.setItem('storedNotifications', JSON.stringify(updatedNotifications));
+      }
+
+      // Show in-app notification
+      setNotifications((prev) => [...prev, newNotification]);
       setTimeout(() => {
         setNotifications((prev) => prev.slice(1));
       }, 5000); // Remove notification after 5 seconds
