@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
@@ -19,11 +20,16 @@ const UserSchema = new mongoose.Schema({
         required: true,
         minlength: 6,
     },
+    oneSignalPlayerId: {
+        type: String,
+        default: null,
+    },
     createdAt: {
         type: Date,
         default: Date.now,
     },
 });
+
 
 // Hash password before saving the user
 UserSchema.pre("save", async function (next) {

@@ -100,19 +100,15 @@ const Sidebar = ({ username, userProjects }) => {
             <span className="text-xs">Tasks</span>
           </Link>
 
-          <Link to="/notifications" className={`relative flex flex-col items-center ${location.pathname === '/notifications' ? 'text-[#72001D]' : 'text-gray-600'}`}>
-            <FiBell className="text-lg" />
-            {newNotificationCount > 0 && (
-              <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full transform translate-x-1/2 -translate-y-1/2">
-                {newNotificationCount}
-              </span>
-            )}
-            <span className="text-xs">Notifications</span>
-          </Link>
 
           <Link to="/settings" className={`flex flex-col items-center ${location.pathname === '/settings' ? 'text-[#72001D]' : 'text-gray-600'}`}>
             <FiSettings className="text-lg" />
             <span className="text-xs">Settings</span>
+          </Link>
+
+          <Link to="/notifications" className={`flex flex-col items-center ${location.pathname === '/notifications' ? 'text-[#72001D]' : 'text-gray-600'}`}>
+            <FiBell className="text-lg" />
+            <span className="text-xs">Notifications</span>
           </Link>
         </div>
 
@@ -248,22 +244,17 @@ const Sidebar = ({ username, userProjects }) => {
                 </li>
               </Link>
 
-              <Link to="/notifications" className="relative">
-                <li className={`flex items-center space-x-2 ${location.pathname === '/notifications' ? 'bg-white text-black' : 'text-white'} px-3 py-2 rounded-lg cursor-pointer`}>
-                  <FiBell className="text-lg" />
-                  <span className="text-sm">Notifications</span>
-                </li>
-                {newNotificationCount > 0 && (
-                  <span className="absolute top-2 right-4 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
-                    {newNotificationCount}
-                  </span>
-                )}
-              </Link>
-
               <Link to="/settings">
                 <li className={`flex items-center space-x-2 ${location.pathname === '/settings' ? 'bg-white text-black' : 'text-white'} px-3 py-2 rounded-lg cursor-pointer`}>
                   <FiSettings className="text-lg" />
                   <span className="text-sm">Settings</span>
+                </li>
+              </Link>
+
+              <Link to="/notifications">
+                <li className={`flex items-center space-x-2 ${location.pathname === '/notifications' ? 'bg-white text-black' : 'text-white'} px-3 py-2 rounded-lg cursor-pointer`}>
+                  <FiBell className="text-lg" />
+                  <span className="text-sm">Notifications</span>
                 </li>
               </Link>
             </ul>

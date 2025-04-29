@@ -1,6 +1,7 @@
 import Sidebar from "../Component/sidebar"
 import { jwtDecode } from "jwt-decode";
 import { useEffect, useState } from "react";
+import PageHeader from "../Component/pageheader";
 
 
 const settings = () => {
@@ -28,6 +29,9 @@ const settings = () => {
       </div>
 
       {/* Main Content Area */}
+      <div>
+      <PageHeader />
+      </div>
     </div>
   )
 }

@@ -472,23 +472,23 @@ const Dashboard = () => {
                     {/* Top Row */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {/* Welcome Card */}
-                        <div className="bg-[#D8BEC6] p-6 rounded-2xl col-span-2 flex flex-col justify-between h-80">
+                        <div className="bg-[#e8e8e8] p-6 rounded-2xl col-span-2 flex flex-col justify-between h-80">
                             <h2 className="text-lg font-semibold text-black">Welcome To Quest</h2>
                             <div className="text-[40px] font-bold text-black">Hello {username}</div>
                             <img src="/uploads/ififif.png" alt="Welcome Illustration" className="w-60 h-60 self-end" />
                         </div>
 
                         {/* Recent Projects */}
-                        <div className="bg-[#D8BEC6] p-4 rounded-2xl">
+                        <div className="bg-[#e8e8e8] p-4 rounded-2xl">
                             <div className="flex justify-between items-center">
                                 <h3 className="text-lg font-bold text-black">Recent Projects</h3>
                                 <Link to="/projects">
-                                    <button className="bg-red-500 text-white px-4 py-2 rounded-lg">All Projects</button>
+                                    <button className="bg-[#800020] text-white px-4 py-2 rounded-lg">All Projects</button>
                                 </Link>
                             </div>
                             <div className="mt-4 space-y-3">
                                 {projectList.length > 0 ? projectList.map((project, index) => (
-                                    <div key={index} className="bg-[#E0ADBD] p-2 rounded-lg flex items-center justify-between cursor-pointer"
+                                    <div key={index} className="bg-[#c4c2c2] p-2 rounded-lg flex items-center justify-between cursor-pointer"
                                         onClick={() => navigate(`/viewproject/${project._id}`)}>
                                         <div className="flex items-center gap-2">
                                             <ProjectImageOrLetter projectName={project.name} projectImage={project.projectImage} size={30} />
@@ -524,7 +524,7 @@ const Dashboard = () => {
                     ].map((item, index) => (
                         <div
                             key={index}
-                            className="bg-[#D8BEC6] p-4 rounded-2xl text-left cursor-pointer hover:bg-[#c9aeb7]"
+                            className="bg-[#e8e8e8] p-4 rounded-2xl text-left cursor-pointer hover:bg-[#c9aeb7]"
                             onClick={() => {
                                 // Only navigate with filter for task statuses, not total projects/tasks
                                 const filterableStatuses = ["to do", "ongoing", "completed", "cancelled", "overdue"];
@@ -543,11 +543,11 @@ const Dashboard = () => {
                     </div>
 
                     {/* Recent Tasks */}
-                    <div className="bg-[#D8BEC6] p-6 rounded-2xl mt-6">
+                    <div className="bg-[#e8e8e8] p-6 rounded-2xl mt-6">
                         <div className="flex justify-between items-center">
                             <h3 className="text-lg font-bold text-black">Recent Tasks</h3>
                             <Link to="/mytasks">
-                                <button className="bg-red-500 text-white px-4 py-2 rounded-lg">All Tasks</button>
+                                <button className="bg-[#800020] text-white px-4 py-2 rounded-lg">All Tasks</button>
                             </Link>
                         </div>
                         <div className="mt-4 space-y-3">
@@ -557,7 +557,7 @@ const Dashboard = () => {
                                 return (
                                     <div
                                         key={index}
-                                        className="bg-[#E0ADBD] p-3 rounded-lg flex items-center justify-between cursor-pointer"
+                                        className="bg-[#c4c2c2] p-3 rounded-lg flex items-center justify-between cursor-pointer"
                                         onClick={() => {
                                             const recentlyAccessedRaw = localStorage.getItem('recentlyAccessedTasks');
                                             let recentlyAccessed = {};

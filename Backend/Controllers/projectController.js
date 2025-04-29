@@ -43,6 +43,30 @@ const createProject = async (req, res) => {
         
 
         await newProject.save();
+
+        // Send OneSignal notification to the user who created the project
+        if (user.oneSignalPlayerId) {
+            const axios = require('axios');
+            const notificationData = {
+                app_id: "f97a813f-88fb-4026-b3dd-c957fe4ee476",
+                include_player_ids: [user.oneSignalPlayerId],
+                headings: { "en": "Project Created" },
+                contents: { "en": `Your project "${name}" has been created successfully.` },
+                data: { projectId: newProject._id.toString() }
+            };
+
+            try {
+                await axios.post('https://onesignal.com/api/v1/notifications', notificationData, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Basic YOUR_REST_API_KEY`
+                    }
+                });
+            } catch (error) {
+                console.error('Error sending OneSignal notification:', error);
+            }
+        }
+
         res.status(201).json({  success: true, message: "Project created successfully", project: newProject });
         
 
