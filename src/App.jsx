@@ -18,6 +18,7 @@ import PrivateRoute from "./Component/privateroute";
 import Edittask from './pages/edittask';
 import Viewproject from './pages/viewproject';
 import Editproject from './pages/editproject';
+import Notification from './pages/Notification';
 
 import OneSignalInit from './Component/OneSignalInit';
 import InAppNotification from './Component/InAppNotification';
@@ -33,6 +34,7 @@ const AppWrapper = () => {
        location.pathname !== '/mytasks' && 
        location.pathname !== '/projects' && 
        location.pathname !== '/messages' && 
+       location.pathname !== '/notification' &&
        location.pathname !== '/settings' && 
        location.pathname !== '/viewproject' && 
        !location.pathname.startsWith('/edittask') && 
@@ -55,6 +57,7 @@ const AppWrapper = () => {
         <Route path="/projects" element={<PrivateRoute><Projects /></PrivateRoute>} />
         <Route path="/messages" element={<PrivateRoute><Messages /></PrivateRoute>} />
         <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
+        <Route path="/notification" element={<PrivateRoute><Notification /></PrivateRoute>} />
         <Route path="/createtask" element={<PrivateRoute><Createtask /></PrivateRoute>} />
         <Route path="/edittask/:taskId" element={<PrivateRoute><Edittask /></PrivateRoute>} />
         <Route path="/editproject/:projectId" element={<PrivateRoute><Editproject /></PrivateRoute>} />
