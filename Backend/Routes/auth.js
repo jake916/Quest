@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken");
 const User = require("../Models/User");
 const dotenv = require("dotenv");
 const cookieParser = require("cookie-parser");
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
 
 dotenv.config();
 
@@ -58,16 +60,38 @@ router.post("/register", async (req, res) => {
             return res.status(400).json({ message: "Username or email already exists" });
         }
 
-        // Remove explicit password hashing to avoid double hashing
+        // Generate verification code
+        const verificationCode = crypto.randomBytes(3).toString("hex").toUpperCase();
+
+        // Create new user with verification code
         const newUser = new User({
             username,
             email: email.toLowerCase(),
-            password: password
+            password: password,
+            verificationCode: verificationCode,
+            isVerified: false
         });
 
         const savedUser = await newUser.save();
 
-        return res.status(201).json({ message: "User registered successfully", user: { id: savedUser._id, username: savedUser.username, email: savedUser.email } });
+        // Send verification email
+        const mailOptions = {
+            from: process.env.SMTP_FROM_EMAIL,
+            to: savedUser.email,
+            subject: "Email Verification Code",
+            text: `Your email verification code is: ${verificationCode}. Please enter this code to verify your email.`,
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error("Error sending verification email:", error);
+                // We still return success but inform user to check email manually
+                return res.status(201).json({ message: "User registered successfully, but failed to send verification email. Please contact support.", user: { id: savedUser._id, username: savedUser.username, email: savedUser.email } });
+            } else {
+                console.log("Verification email sent:", info.response);
+                return res.status(201).json({ message: "User registered successfully. Verification email sent.", user: { id: savedUser._id, username: savedUser.username, email: savedUser.email } });
+            }
+        });
 
     } catch (error) {
         console.error("Registration Error:", error.message);
@@ -150,6 +174,190 @@ router.get("/dashboard", authMiddleware, async (req, res) => {
         res.status(200).json({ message: "Welcome to the dashboard", user });
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
+    }
+});
+
+
+// Middleware to check if user's email is verified
+const emailVerifiedMiddleware = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        if (!user.isVerified) {
+            return res.status(403).json({ message: "Email not verified" });
+        }
+        next();
+    } catch (error) {
+        return res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+// Setup nodemailer transporter
+const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
+    secure: process.env.SMTP_SECURE === "true", // true for 465, false for other ports
+    auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+    },
+});
+
+// Forgot Password - send reset code
+router.post("/forgot-password", async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ message: "Email is required" });
+        }
+
+        const user = await User.findOne({ email: email.toLowerCase() });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Generate reset code and expiration (1 hour)
+        const resetCode = crypto.randomBytes(3).toString("hex").toUpperCase();
+        const resetExpires = Date.now() + 3600000; // 1 hour
+
+        user.resetPasswordCode = resetCode;
+        user.resetPasswordExpires = resetExpires;
+        await user.save();
+
+        // Send reset code email
+        const mailOptions = {
+            from: process.env.SMTP_FROM_EMAIL,
+            to: user.email,
+            subject: "Password Reset Code",
+            text: `Your password reset code is: ${resetCode}. It expires in 1 hour.`,
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error("Error sending password reset email:", error);
+                return res.status(500).json({ message: "Failed to send password reset email" });
+            } else {
+                console.log("Password reset email sent:", info.response);
+                return res.status(200).json({ message: "Password reset code sent" });
+            }
+        });
+
+    } catch (error) {
+        console.error("Forgot Password Error:", error.message);
+        return res.status(500).json({ message: "Server error", error: error.message });
+    }
+});
+
+// Verify Reset Code
+router.post("/verify-reset-code", async (req, res) => {
+    try {
+        const { email, code } = req.body;
+
+        if (!email || !code) {
+            return res.status(400).json({ message: "Email and code are required" });
+        }
+
+        const user = await User.findOne({ email: email.toLowerCase() });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        if (!user.resetPasswordCode || !user.resetPasswordExpires) {
+            return res.status(400).json({ message: "No reset request found" });
+        }
+
+        if (user.resetPasswordCode !== code.toUpperCase()) {
+            return res.status(400).json({ message: "Invalid reset code" });
+        }
+
+        if (user.resetPasswordExpires < Date.now()) {
+            return res.status(400).json({ message: "Reset code expired" });
+        }
+
+        return res.status(200).json({ message: "Reset code verified" });
+
+    } catch (error) {
+        console.error("Verify Reset Code Error:", error.message);
+        return res.status(500).json({ message: "Server error", error: error.message });
+    }
+});
+
+// Reset Password
+router.post("/reset-password", async (req, res) => {
+    try {
+        const { email, code, newPassword } = req.body;
+
+        if (!email || !code || !newPassword) {
+            return res.status(400).json({ message: "Email, code, and new password are required" });
+        }
+
+        const user = await User.findOne({ email: email.toLowerCase() });
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        if (!user.resetPasswordCode || !user.resetPasswordExpires) {
+            return res.status(400).json({ message: "No reset request found" });
+        }
+
+        if (user.resetPasswordCode !== code.toUpperCase()) {
+            return res.status(400).json({ message: "Invalid reset code" });
+        }
+
+        if (user.resetPasswordExpires < Date.now()) {
+            return res.status(400).json({ message: "Reset code expired" });
+        }
+
+        user.password = newPassword;
+        user.resetPasswordCode = null;
+        user.resetPasswordExpires = null;
+        await user.save();
+
+        return res.status(200).json({ message: "Password reset successful" });
+
+    } catch (error) {
+        console.error("Reset Password Error:", error.message);
+        return res.status(500).json({ message: "Server error", error: error.message });
+    }
+});
+
+router.post("/verify-email", async (req, res) => {
+    try {
+        const { userId, code } = req.body;
+
+        if (!userId || !code) {
+            return res.status(400).json({ message: "User ID and code are required" });
+        }
+
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        if (user.isVerified) {
+            return res.status(400).json({ message: "Email already verified" });
+        }
+
+        if (user.verificationCode !== code.toUpperCase()) {
+            return res.status(400).json({ message: "Invalid verification code" });
+        }
+
+        user.isVerified = true;
+        user.verificationCode = null;
+        await user.save();
+
+        return res.status(200).json({ message: "Email verified successfully" });
+
+    } catch (error) {
+        console.error("Email Verification Error:", error.message);
+        return res.status(500).json({ message: "Server error", error: error.message });
     }
 });
 

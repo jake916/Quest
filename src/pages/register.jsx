@@ -61,7 +61,8 @@ const Register = () => {
         toast.error(data.message || "Registration failed");
       } else {
         toast.success(data.message || "Registration successful!");
-        setTimeout(() => navigate("/"), 2000);
+        // Navigate immediately after showing toast
+        navigate("/email-verification", { state: { userId: data.user.id } });
       }
     } catch (error) {
       console.error("Error submitting form:", error);

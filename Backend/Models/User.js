@@ -1,4 +1,3 @@
-
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 
@@ -24,12 +23,27 @@ const UserSchema = new mongoose.Schema({
         type: String,
         default: null,
     },
+    verificationCode: {
+        type: String,
+        default: null,
+    },
+    isVerified: {
+        type: Boolean,
+        default: false,
+    },
+    resetPasswordCode: {
+        type: String,
+        default: null,
+    },
+    resetPasswordExpires: {
+        type: Date,
+        default: null,
+    },
     createdAt: {
         type: Date,
         default: Date.now,
     },
 });
-
 
 // Hash password before saving the user
 UserSchema.pre("save", async function (next) {

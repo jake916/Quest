@@ -19,6 +19,7 @@ import Edittask from './pages/edittask';
 import Viewproject from './pages/viewproject';
 import Editproject from './pages/editproject';
 import Notification from './pages/Notification';
+import EmailVerification from './pages/EmailVerification';
 
 import OneSignalInit from './Component/OneSignalInit';
 import InAppNotification from './Component/InAppNotification';
@@ -50,6 +51,7 @@ const AppWrapper = () => {
         <Route path="/passwordreset" element={<Passwordreset />} />
         <Route path="/newpassword" element={<Newpassword />} />
         <Route path="/alldone" element={<Alldone />} />
+        <Route path="/email-verification" element={<EmailVerification />} />
 
         {/* Protected Routes */}
         <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
