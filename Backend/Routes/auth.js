@@ -1,7 +1,9 @@
 const express = require("express");
+
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../Models/User");
+const Notification = require("../Models/Notification");
 const dotenv = require("dotenv");
 const cookieParser = require("cookie-parser");
 const nodemailer = require("nodemailer");
@@ -113,6 +115,22 @@ router.post("/login", async (req, res) => {
 
         if (!isMatch) {
             return res.status(400).json({ message: "Invalid credentials" });
+        }
+
+        // Check if welcome notification has been sent
+        if (!user.hasReceivedWelcomeNotification) {
+            // Create welcome notification
+            const welcomeNotification = new Notification({
+                userId: user._id,
+                title: "Welcome to Quest!",
+                message: "Thank you for joining Quest. We're excited to have you on board!",
+                isRead: false,
+            });
+            await welcomeNotification.save();
+
+            // Update user flag
+            user.hasReceivedWelcomeNotification = true;
+            await user.save();
         }
 
         const token = jwt.sign(
@@ -345,6 +363,17 @@ router.post("/verify-email", async (req, res) => {
     } catch (error) {
         console.error("Email Verification Error:", error.message);
         return res.status(500).json({ message: "Server error", error: error.message });
+    }
+});
+
+// Get notifications for logged-in user
+router.get("/notifications", authMiddleware, async (req, res) => {
+    try {
+        const notifications = await Notification.find({ userId: req.user.id }).sort({ createdAt: -1 });
+        res.status(200).json({ notifications });
+    } catch (error) {
+        console.error("Get Notifications Error:", error.message);
+        res.status(500).json({ message: "Server error", error: error.message });
     }
 });
 

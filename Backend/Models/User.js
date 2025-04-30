@@ -43,6 +43,10 @@ const UserSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
+    hasReceivedWelcomeNotification: {
+        type: Boolean,
+        default: false,
+    },
 });
 
 // Hash password before saving the user

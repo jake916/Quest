@@ -35,10 +35,32 @@ const Notification = () => {
 
   // Load notifications
   useEffect(() => {
-    const storedNotifications = JSON.parse(localStorage.getItem('storedNotifications') || '[]');
-    setNotifications(storedNotifications);
-    // Clear notification count when page is viewed
-    localStorage.setItem('newNotificationCount', '0');
+    const fetchNotifications = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setNotifications([]);
+        return;
+      }
+      try {
+        const response = await fetch("/api/notifications", {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+          },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setNotifications(data.notifications || []);
+          // Clear notification count when page is viewed
+          localStorage.setItem('newNotificationCount', '0');
+        } else {
+          setNotifications([]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error);
+        setNotifications([]);
+      }
+    };
+    fetchNotifications();
   }, []);
 
   const handleNotificationClick = (notif) => {
