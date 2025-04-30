@@ -60,38 +60,18 @@ router.post("/register", async (req, res) => {
             return res.status(400).json({ message: "Username or email already exists" });
         }
 
-        // Generate verification code
-        const verificationCode = crypto.randomBytes(3).toString("hex").toUpperCase();
-
-        // Create new user with verification code
+        // Bypass email verification: create user as verified without sending email
         const newUser = new User({
             username,
             email: email.toLowerCase(),
             password: password,
-            verificationCode: verificationCode,
-            isVerified: false
+            verificationCode: null,
+            isVerified: true
         });
 
         const savedUser = await newUser.save();
 
-        // Send verification email
-        const mailOptions = {
-            from: process.env.SMTP_FROM_EMAIL,
-            to: savedUser.email,
-            subject: "Email Verification Code",
-            text: `Your email verification code is: ${verificationCode}. Please enter this code to verify your email.`,
-        };
-
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                console.error("Error sending verification email:", error);
-                // We still return success but inform user to check email manually
-                return res.status(201).json({ message: "User registered successfully, but failed to send verification email. Please contact support.", user: { id: savedUser._id, username: savedUser.username, email: savedUser.email } });
-            } else {
-                console.log("Verification email sent:", info.response);
-                return res.status(201).json({ message: "User registered successfully. Verification email sent.", user: { id: savedUser._id, username: savedUser.username, email: savedUser.email } });
-            }
-        });
+        return res.status(201).json({ message: "User registered successfully. Please login.", user: { id: savedUser._id, username: savedUser.username, email: savedUser.email } });
 
     } catch (error) {
         console.error("Registration Error:", error.message);
