@@ -42,7 +42,7 @@ const Notification = () => {
         return;
       }
       try {
-        const response = await fetch("/api/notifications", {
+        const response = await fetch("https://quest-3ica.onrender.com/api/notifications", {
           headers: {
             "Authorization": `Bearer ${token}`,
           },
