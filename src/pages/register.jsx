@@ -62,7 +62,7 @@ const Register = () => {
       } else {
         toast.success(data.message || "Registration successful!");
         // Navigate immediately after showing toast
-        navigate("/email-verification", { state: { userId: data.user.id } });
+        navigate("/");
       }
     } catch (error) {
       console.error("Error submitting form:", error);
