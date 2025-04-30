@@ -4,7 +4,7 @@ import { FiSearch } from "react-icons/fi";
 import { FaPlus, FaBell } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
-const PageHeader = ({ projectId, searchQuery, onSearchChange, hideSearch, title }) => {
+const PageHeader = ({ projectId, searchQuery, onSearchChange, hideSearch, title, bodyText }) => {
   const location = useLocation();
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   let headerContent;
@@ -27,9 +27,16 @@ const PageHeader = ({ projectId, searchQuery, onSearchChange, hideSearch, title 
   // If title prop is provided, use it as header content
   if (title) {
     headerContent = (
-      <p className={`text-lg font-bold text-[#72001D] p-4 ${windowWidth < 768 ? 'text-left' : 'text-xl'}`}>
-        {title}
-      </p>
+      <div className={`p-4 ${windowWidth < 768 ? 'text-left' : ''}`}>
+        <p className={`text-lg font-bold text-[#72001D] ${windowWidth < 768 ? '' : 'text-xl'}`}>
+          {title}
+        </p>
+        {bodyText && (
+          <p className="text-sm text-gray-600 mt-1">
+            {bodyText}
+          </p>
+        )}
+      </div>
     );
   } else if (windowWidth < 768) {
     switch (true) {

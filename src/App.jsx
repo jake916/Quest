@@ -24,8 +24,13 @@ import EmailVerification from './pages/EmailVerification';
 import OneSignalInit from './Component/OneSignalInit';
 import InAppNotification from './Component/InAppNotification';
 
+import useCustomDarkMode from './hooks/useCustomDarkMode';
+
 const AppWrapper = () => {
-  const location = useLocation()
+  const location = useLocation();
+
+  // Global dark mode state
+  const [isDarkMode, toggleDarkMode] = useCustomDarkMode();
 
   return (
     <>
@@ -54,18 +59,18 @@ const AppWrapper = () => {
         <Route path="/email-verification" element={<EmailVerification />} />
 
         {/* Protected Routes */}
-        <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-        <Route path="/mytasks" element={<PrivateRoute><MyTasks /></PrivateRoute>} />
-        <Route path="/projects" element={<PrivateRoute><Projects /></PrivateRoute>} />
-        <Route path="/messages" element={<PrivateRoute><Messages /></PrivateRoute>} />
-        <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
-        <Route path="/notifications" element={<PrivateRoute><Notification /></PrivateRoute>} />
-        <Route path="/createtask" element={<PrivateRoute><Createtask /></PrivateRoute>} />
-        <Route path="/edittask/:taskId" element={<PrivateRoute><Edittask /></PrivateRoute>} />
-        <Route path="/editproject/:projectId" element={<PrivateRoute><Editproject /></PrivateRoute>} />
-        <Route path="/createproject" element={<PrivateRoute><Createproject /></PrivateRoute>} />
-        <Route path="/viewproject" element={<PrivateRoute><Viewproject /></PrivateRoute>} />
-        <Route path="/viewproject/:id" element={<PrivateRoute><Viewproject /></PrivateRoute>} />
+        <Route path="/dashboard" element={<PrivateRoute><Dashboard isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} /></PrivateRoute>} />
+        <Route path="/mytasks" element={<PrivateRoute><MyTasks isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} /></PrivateRoute>} />
+        <Route path="/projects" element={<PrivateRoute><Projects isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} /></PrivateRoute>} />
+        <Route path="/messages" element={<PrivateRoute><Messages isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} /></PrivateRoute>} />
+        <Route path="/settings" element={<PrivateRoute><Settings isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} /></PrivateRoute>} />
+        <Route path="/notifications" element={<PrivateRoute><Notification isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} /></PrivateRoute>} />
+        <Route path="/createtask" element={<PrivateRoute><Createtask isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} /></PrivateRoute>} />
+        <Route path="/edittask/:taskId" element={<PrivateRoute><Edittask isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} /></PrivateRoute>} />
+        <Route path="/editproject/:projectId" element={<PrivateRoute><Editproject isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} /></PrivateRoute>} />
+        <Route path="/createproject" element={<PrivateRoute><Createproject isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} /></PrivateRoute>} />
+        <Route path="/viewproject" element={<PrivateRoute><Viewproject isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} /></PrivateRoute>} />
+        <Route path="/viewproject/:id" element={<PrivateRoute><Viewproject isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} /></PrivateRoute>} />
       </Routes>
     </>
   )

@@ -17,6 +17,13 @@
 
   /* overflow: hidden; */
 }
+
+/* Dark mode styles */
+.dark {
+  color-scheme: dark;
+  color: #e0e0e0;
+  background-color: #121212;
+}
 .hide-scrollbar::-webkit-scrollbar {
   display: none; /* Hide scrollbar for Chrome, Safari, and Edge */
 }
