@@ -119,18 +119,39 @@ router.post("/login", async (req, res) => {
 
         // Check if welcome notification has been sent
         if (!user.hasReceivedWelcomeNotification) {
-            // Create welcome notification
-            const welcomeNotification = new Notification({
-                userId: user._id,
-                title: "Welcome to Quest!",
-                message: "Thank you for joining Quest. We're excited to have you on board!",
-                isRead: false,
-            });
-            await welcomeNotification.save();
+        // Create welcome notification
+        const welcomeNotification = new Notification({
+            userId: user._id,
+            title: "Welcome to Quest!",
+            message: "Thank you for joining Quest. We're excited to have you on board!",
+            isRead: false,
+        });
+        await welcomeNotification.save();
 
-            // Update user flag
-            user.hasReceivedWelcomeNotification = true;
-            await user.save();
+        // Send OneSignal push notification if player ID exists
+        if (user.oneSignalPlayerId) {
+            const axios = require('axios');
+            const notificationData = {
+                app_id: "f97a813f-88fb-4026-b3dd-c957fe4ee476",
+                include_player_ids: [user.oneSignalPlayerId],
+                headings: { "en": "Welcome to Quest!" },
+                contents: { "en": "Thank you for joining Quest. We're excited to have you on board!" }
+            };
+            try {
+                await axios.post('https://onesignal.com/api/v1/notifications', notificationData, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Basic YOUR_REST_API_KEY`
+                    }
+                });
+            } catch (error) {
+                console.error('Error sending OneSignal welcome notification:', error);
+            }
+        }
+
+        // Update user flag
+        user.hasReceivedWelcomeNotification = true;
+        await user.save();
         }
 
         const token = jwt.sign(
