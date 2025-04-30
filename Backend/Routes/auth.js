@@ -330,28 +330,35 @@ router.post("/reset-password", async (req, res) => {
 router.post("/verify-email", async (req, res) => {
     try {
         const { userId, code } = req.body;
+        console.log("Verify-email request received:", { userId, code });
 
         if (!userId || !code) {
+            console.log("Missing userId or code");
             return res.status(400).json({ message: "User ID and code are required" });
         }
 
         const user = await User.findById(userId);
+        console.log("User found:", user);
 
         if (!user) {
+            console.log("User not found");
             return res.status(404).json({ message: "User not found" });
         }
 
         if (user.isVerified) {
+            console.log("Email already verified");
             return res.status(400).json({ message: "Email already verified" });
         }
 
         if (user.verificationCode !== code.toUpperCase()) {
+            console.log("Invalid verification code");
             return res.status(400).json({ message: "Invalid verification code" });
         }
 
         user.isVerified = true;
         user.verificationCode = null;
         await user.save();
+        console.log("Email verified successfully for user:", userId);
 
         return res.status(200).json({ message: "Email verified successfully" });
 
